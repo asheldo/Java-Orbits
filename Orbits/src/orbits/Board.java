@@ -18,7 +18,7 @@ public class Board extends JPanel{
 	
 	@Override
 	public int getHeight() {
-		return 683;
+		return 690;
 	}
 
 	@Override
@@ -29,7 +29,7 @@ public class Board extends JPanel{
 		Graphics2D g = (Graphics2D)q;
 		
 		g.setColor(Color.gray);
-		g.drawRect(5, 5, 735, 668);
+		g.drawRect(5, 5, 735, 669);
 		
 		
 		COLORS.add(Color.red);
@@ -71,6 +71,26 @@ public class Board extends JPanel{
 				}
 				
 			}
+			// Top wall bounce
+			if (p2.y() >= 331) {
+				if (p2.getDy() > 0)
+					dy = -dy;
+			}
+			// Right wall bounce
+			if (p2.x() >= 361) {
+				if (p2.getDx() > 0)
+					dx = -dx;
+			}
+			// Bottom wall bounce
+			if (p2.y() <= -329) {
+				if (p2.getDy() < 0)
+					dy = -dy;
+			}
+			// Left wall bounce
+			if (p2.x() <= -364) {
+				if (p2.getDx() < 0)
+					dx = -dx;
+			}
 			Runner.drawPlanets.get(i).setDx(dx);
 			
 			Runner.drawPlanets.get(i).setDy(dy);
@@ -79,6 +99,8 @@ public class Board extends JPanel{
 		// Moves
 		for (int i = 0; i < Runner.drawPlanets.size(); i++) {
 			if (Runner.handle.tabbedPane.getSelectedIndex() == 1){
+				p1 = Runner.drawPlanets.get(i);
+				
 				Runner.drawPlanets.get(i).move();
 				Planet draw = Runner.drawPlanets.get(i);
 				g.setColor(COLORS.get(i));
@@ -103,6 +125,9 @@ public class Board extends JPanel{
 		// Checks for collisions
 		for (int i = 0; i < Runner.drawPlanets.size(); i++) {
 			p1 = Runner.drawPlanets.get(i);
+			
+			
+			
 			for (Planet p3 : Runner.drawPlanets) {
 				// If the distance is closer than the 2 planet radii (one diameter)
 				if(Math.sqrt(Math.pow(p3.x()-p1.x(), 2) + Math.pow(p3.y()-p1.y(), 2)) <= 10 && Math.pow(p3.x()-p1.x(), 2) + Math.pow(p3.y()-p1.y(), 2) != 0) {
@@ -111,6 +136,9 @@ public class Board extends JPanel{
 					
 				}
 			}
+			
+			
+			
 		}
 		
 		

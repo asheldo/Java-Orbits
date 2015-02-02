@@ -372,7 +372,7 @@ public class GUIMenu extends JFrame{
 		JPanel TabPaneHolder = new JPanel();
 		scrollPane.setViewportView(TabPaneHolder);
 		TabPaneHolder.setLayout(null);
-		tabbedPane.setBounds(0, 0, 1193, 685);
+		tabbedPane.setBounds(0, 0, 1193, 715);
 		
 		
 		TabPaneHolder.add(tabbedPane);
@@ -404,7 +404,7 @@ public class GUIMenu extends JFrame{
 		SimulationTab = new JPanel();
 		tabbedPane.addTab("Simulation", null, SimulationTab, null);
 		SimulationTab.setLayout(null);
-		panel_2.setBounds(10, 5, 750, 683);
+		panel_2.setBounds(10, 5, 750, 690);
 		panel_2.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 		SimulationTab.add(panel_2);
 		panel_2.setLayout(new BoxLayout(panel_2, BoxLayout.X_AXIS));

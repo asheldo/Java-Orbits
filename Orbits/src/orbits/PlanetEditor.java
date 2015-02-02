@@ -57,7 +57,7 @@ public class PlanetEditor extends JPanel {
 		planetsTable.setBounds(10, 5, 750, 683);
 		this.add(planetsTable);
 
-
+		
 		planetsTable.addKeyListener(listen = new KeyListener() {
 			
 			@Override
