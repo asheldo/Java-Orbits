@@ -106,9 +106,9 @@ public class Board extends JPanel{
 			for (Planet p3 : Runner.drawPlanets) {
 				// If the distance is closer than the 2 planet radii (one diameter)
 				if(Math.sqrt(Math.pow(p3.x()-p1.x(), 2) + Math.pow(p3.y()-p1.y(), 2)) <= 10 && Math.pow(p3.x()-p1.x(), 2) + Math.pow(p3.y()-p1.y(), 2) != 0) {
-					//Runner.drawPlanets.get(i).setFixed(true); //fix planets
-					Runner.drawPlanets.get(i).setDx(-Runner.drawPlanets.get(i).getDx());
-					Runner.drawPlanets.get(i).setDy(-Runner.drawPlanets.get(i).getDy());
+					Runner.drawPlanets.get(i).setFixed(true); //fix planets
+					
+					
 				}
 			}
 		}
