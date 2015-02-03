@@ -25,7 +25,7 @@ public class ConfirmReset extends JDialog {
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setVisible(true);
 		setIconImage(Toolkit.getDefaultToolkit().getImage(ConfirmReset.class.getResource("/javax/swing/plaf/metal/icons/Warn.gif")));
-		setBounds(100, 100, 197, 83);
+		setBounds(13, 670, 197, 83);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBackground(Color.RED);
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -63,6 +63,7 @@ public class ConfirmReset extends JDialog {
 						Runner.handle.tabbedPane.setEnabled(true);
 						Runner.handle.btnResetSimulation.setEnabled(true);
 						Runner.handle.restartPlArrList = new ArrayList<Planet>();
+						PlanetEditor.alp = new ArrayList<Planet>();
 						Runner.drawPlanets = new ArrayList<Planet>();
 						Runner.handle.editorIsUp = false;
 						Runner.handle.crdb.dispose();

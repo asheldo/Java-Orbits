@@ -3,7 +3,12 @@ package orbits;
 import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.border.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.*;
+
+import org.w3c.dom.events.Event;
+import org.w3c.dom.events.EventListener;
 
 import java.awt.*;
 import java.awt.event.KeyListener;
@@ -11,6 +16,9 @@ import java.util.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.beans.EventHandler;
 
 public class PlanetEditor extends JPanel {
 
@@ -18,18 +26,16 @@ public class PlanetEditor extends JPanel {
 	public KeyListener listen;
 	//public JPanel mainWindowPanel;
 	public JTable planetsTable;
+	public MouseListener mlisten;
 	public DefaultTableModel repaint;
-//	public ArrayList<Planet> alp;
-	public static Timer timer = new Timer(1, new ActionListener() {
-		
-		@Override
-		public void actionPerformed(ActionEvent e) {}
-	});
+	public static ArrayList<Planet> alp = new ArrayList<Planet>();
+	
+	
 	
 	
 	public PlanetEditor() {
 		
-		ArrayList<Planet> alp = new ArrayList<Planet>();
+		alp = new ArrayList<Planet>();
 		
 		for(int i1 = 0; i1 < Runner.drawPlanets.size(); i1++)
 			alp.add(null);
@@ -56,47 +62,22 @@ public class PlanetEditor extends JPanel {
 		
 		planetsTable.setBounds(10, 5, 750, 683);
 		this.add(planetsTable);
-
-		
-		planetsTable.addKeyListener(listen = new KeyListener() {
-			
-			@Override
-			public void keyTyped(KeyEvent e) {
+		Runner.handle.tabbedPane.addChangeListener(new ChangeListener() {
 				
-			}
-			
-			@Override
-			public void keyReleased(KeyEvent e) {if (e.getKeyCode() == KeyEvent.VK_ENTER){
-				
-			}}
-			
-			@Override
-			public void keyPressed(KeyEvent a) {if (a.getKeyCode() == KeyEvent.VK_SPACE){
-					for (int row = 0; row < alp.size(); row++){
-					try{
-						alp.get(row).setX(Double.parseDouble(String.valueOf(planetsTable.getValueAt(row+1, 1))));
-						alp.get(row).setY(Double.parseDouble(String.valueOf(planetsTable.getValueAt(row+1, 2))));
-						alp.get(row).setMass(Integer.parseInt(String.valueOf(planetsTable.getValueAt(row+1, 3))));
-						if ((String.valueOf(planetsTable.getValueAt(row+1, 4))).equalsIgnoreCase("fixed") || String.valueOf(planetsTable.getValueAt(row+1, 5)).equalsIgnoreCase("fixed")) {
-							alp.get(row).setDx(0);
-							alp.get(row).setDy(0);
-							alp.get(row).setFixed(true);
-						} else {
-							alp.get(row).setDx(Double.parseDouble(String.valueOf(planetsTable.getValueAt(row+1,4))));
-							alp.get(row).setDy(Double.parseDouble(String.valueOf(planetsTable.getValueAt(row+1,5))));
-						}
-						
-					} catch (NumberFormatException g) {g.getMessage(); g.printStackTrace();}
-				}
-					for(int i2 = 0; i2 < alp.size(); i2++){
-						Runner.drawPlanets.set(i2, alp.get(i2));
-					}
+				@Override
+				public void stateChanged(ChangeEvent e) {
 					
-			}
-		}});
+						if (Runner.handle.editorIsUp){
+							Runner.handle.pEdit.updateAL();
+							Runner.handle.editorIsUp = false;
+							
+						}
+				}
+			});
+		
 	}
-	
-			
+		
+		
 	
 	private Object[][] rows(ArrayList<Planet> alp) {
 		
@@ -124,12 +105,38 @@ public class PlanetEditor extends JPanel {
 					rows[r][c] = p.getDx();
 				else if (c == 5)
 					rows[r][c] = p.getDy();
-				else if (p.getFixed()){
+				if (p.getFixed()){
 					rows[r][4] = (Object)"Fixed";
 					rows[r][5] = (Object)"Fixed";
 				}
 			}
 		}
 		return rows;
+	}
+	
+	public void updateAL() {
+		for (int row = 0;
+				row < PlanetEditor.alp.size();
+				row++){
+			try{
+				alp.get(row).setX(Double.parseDouble(String.valueOf(planetsTable.getValueAt(row+1, 1))));
+				alp.get(row).setY(Double.parseDouble(String.valueOf(planetsTable.getValueAt(row+1, 2))));
+				alp.get(row).setMass(Integer.parseInt(String.valueOf(planetsTable.getValueAt(row+1, 3))));
+				if ((String.valueOf(planetsTable.getValueAt(row+1, 4))).equalsIgnoreCase("fixed") || String.valueOf(planetsTable.getValueAt(row+1, 5)).equalsIgnoreCase("fixed")) {
+					alp.get(row).setDx(0);
+					alp.get(row).setDy(0);
+					alp.get(row).setFixed(true);
+				} else {
+					alp.get(row).setDx(Double.parseDouble(String.valueOf(planetsTable.getValueAt(row+1,4))));
+					alp.get(row).setDy(Double.parseDouble(String.valueOf(planetsTable.getValueAt(row+1,5))));
+					alp.get(row).setFixed(false);
+				}
+				
+			} catch (NumberFormatException g) {g.getMessage(); g.printStackTrace();}
+		}
+			for(int i2 = 0; i2 < alp.size(); i2++){
+				Runner.drawPlanets.set(i2, alp.get(i2));
+			}
+		
 	}
 }

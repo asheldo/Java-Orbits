@@ -25,9 +25,11 @@ public class GUIMenu extends JFrame{
 
 	public boolean isRunning; //false
 	
+	private boolean presetFirstrun = true;
 	
+	public WarningBox warning;
 	
-	
+	public String warningtext;
 	
 	public TextField xpos = new TextField();
 	public TextField ypos = new TextField();
@@ -109,10 +111,69 @@ public class GUIMenu extends JFrame{
 			gbc_makeplanet.gridx = 0;
 			gbc_makeplanet.gridy = 0;
 			ControlBox.add(makeplanet, gbc_makeplanet);
-			makeplanet.addActionListener (new ActionListener() {public void actionPerformed(ActionEvent e) {
+			makeplanet.addActionListener (new ActionListener() {public void actionPerformed(ActionEvent e) { if (Runner.handle.tabbedPane.getSelectedIndex() != 3) {
 					try{newplanet();}
 					catch(PlanetsCoincideError f) {dispfield.setText(f.getMessage());}
-					}});
+			} else {
+				boolean empty = false;
+				
+				double tryX = -364;
+				double tryY = -323;
+				int tryMass = 0;
+				double tryDX = 0;
+				double tryDY = 0;
+				boolean tryFixed = false;
+				
+				boolean encounteredError = false;
+				
+				try{tryX = Double.parseDouble(xpos.getText());} catch (NumberFormatException a) {encounteredError = true;}
+				try{tryY = Double.parseDouble(mass.getText());} catch (NumberFormatException a) {encounteredError = true;}
+				try{tryMass = Integer.parseInt(mass.getText());} catch (NumberFormatException a) {encounteredError = true;}
+				try{tryDX = Double.parseDouble(xpos.getText());} catch (NumberFormatException a) {encounteredError = true;}
+				try{tryDX = Double.parseDouble(xpos.getText());} catch (NumberFormatException a) {encounteredError = true;}
+				
+				if(encounteredError)
+					warningtext = "\n  Error parsing contents of some\n   entry fields, default values\n       have been inserted.";
+					try{warning.dispose();} catch (NullPointerException npe) {}
+					warning = new WarningBox();
+				
+				if (String.valueOf(xvel.getText()).equalsIgnoreCase("FIXED") || (String.valueOf(yvel.getText()).equalsIgnoreCase("FIXED"))) {
+					tryDX = 0;
+					tryDY = 0;
+					tryFixed = true;
+				}
+				
+				
+				if (Runner.drawPlanets.size() == 0) {
+					empty = true;
+				}
+				
+				int errorIndex = -1;
+				
+				while(!empty){
+					for (Planet p: Runner.drawPlanets){
+						if ((Math.sqrt(Math.pow(p.x() - tryX, 2) + Math.pow(p.y() - tryY, 2)) < 10)) {
+							tryX += 11;
+							errorIndex = Runner.drawPlanets.indexOf(p);
+						} else {
+							empty = true;
+						}
+					}
+				}
+				
+				if(errorIndex != -1){
+					Planet p = Runner.drawPlanets.get(errorIndex);
+					warningtext = "\n   The planet you are trying to\n   make would coincide with the\n      planet at (" + (int)p.x() + " ," + (int)p.y() + ")";
+					try{warning.dispose();} catch (NullPointerException npe) {}
+					warning = new WarningBox();
+				}
+				
+				if(empty)
+					Runner.drawPlanets.add(new Planet(tryX, tryY, tryMass, tryDX, tryDY, tryFixed));
+				Runner.handle.tabbedPane.setSelectedIndex(0);
+				Runner.handle.tabbedPane.setSelectedIndex(3);
+			}
+			}});
 		}
 		
 //		GridBagConstraints gbc_btnEditPlanets = new GridBagConstraints();
@@ -249,9 +310,6 @@ public class GUIMenu extends JFrame{
 				
 				@Override
 				public void keyTyped(KeyEvent e) {
-					if (e.getKeyCode() == KeyEvent.VK_ENTER)
-						try{newplanet();}
-					catch(PlanetsCoincideError f) {dispfield.setText(f.getMessage());}
 				}
 				
 				@Override
@@ -278,7 +336,6 @@ public class GUIMenu extends JFrame{
 			btnRestartSimulation.setBackground(Color.BLACK);
 			btnRestartSimulation.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					isRunning = true;
 					recallConfig();
 					Runner.handle.repaint();
 				}
@@ -461,12 +518,16 @@ public class GUIMenu extends JFrame{
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				if (tabbedPane.getSelectedIndex()==3){
-				pEdit = new PlanetEditor();
-				tabbedPane.setComponentAt(3, pEdit);
+					if(!editorIsUp){
+						pEdit = new PlanetEditor();
+						editorIsUp = true;
+						tabbedPane.setComponentAt(3, pEdit);
+					}
 				}
 				
 			}
 		});
+		
 		
 	}
 	
@@ -537,35 +598,54 @@ public class GUIMenu extends JFrame{
 	public void recallConfig() {
 		if (restartindex == 0){
 			String d = "";
+				
 			for(int i = 0; i < restartPlArrList.size(); i++) {
-				Runner.drawPlanets.set(i, restartPlArrList.get(i));
+				Runner.drawPlanets.set(i, new Planet(restartPlArrList.get(i)));
 				String temp = "  Index: " + (i+1) + "\t" + Runner.drawPlanets.get(i).toString() + "\n";
 				d += temp;
 			}
 			dispfield.setText(d);
-			isRunning = true;
-			tabbedPane.setSelectedIndex(1);
+			isRunning = false;
+			tabbedPane.setSelectedIndex(3);
 		} else if (restartindex == 1) {
 			Runner.drawPlanets = new ArrayList<Planet>();
 			Runner.drawPlanets.add(new Planet(0, 0, 5000, 0, 0, true));
 			Runner.drawPlanets.add(new Planet(100, 0, 0, 0, 22, false));
-			isRunning = true;
-			tabbedPane.setSelectedIndex(1);
+			if(!presetFirstrun) {
+				isRunning = false;
+				tabbedPane.setSelectedIndex(3);
+			} else {
+				isRunning = true;
+				tabbedPane.setSelectedIndex(1);
+				presetFirstrun = false;
+			}
 		} else if (restartindex == 2) {
 			Runner.drawPlanets = new ArrayList<Planet>();
 			Runner.drawPlanets.add(new Planet(-20, 0, 2500, 0, 0, true));
 			Runner.drawPlanets.add(new Planet(20, 0, 2500, 0, 0, true));
 			Runner.drawPlanets.add(new Planet(0, 0, 0, 0, 66, false));
-			isRunning = true;
-			tabbedPane.setSelectedIndex(1);
+			if(!presetFirstrun) {
+				isRunning = false;
+				tabbedPane.setSelectedIndex(3);
+			} else {
+				isRunning = true;
+				tabbedPane.setSelectedIndex(1);
+				presetFirstrun = false;
+			}
 		} else if (restartindex == 3) {
 			Runner.drawPlanets = new ArrayList<Planet>();
 			Runner.drawPlanets.add(new Planet(200, 0, 10000, 0, 10, false));
 			Runner.drawPlanets.add(new Planet(-200, 0, 10000, 0, -10, false));
 			Runner.drawPlanets.add(new Planet(0, 200, 10000, -10, 0, false));
 			Runner.drawPlanets.add(new Planet(0, -200, 10000, 10, 0, false));
-			isRunning = true;
-			tabbedPane.setSelectedIndex(1);
+			if(!presetFirstrun) {
+				isRunning = false;
+				tabbedPane.setSelectedIndex(3);
+			} else {
+				isRunning = true;
+				tabbedPane.setSelectedIndex(1);
+				presetFirstrun = false;
+			}
 		}
 	}
 }

@@ -1,7 +1,6 @@
 package orbits;
 
 import javax.swing.*;
-
 import java.awt.*;
 import java.util.ArrayList;
 
@@ -35,12 +34,12 @@ public class Board extends JPanel{
 		COLORS.add(Color.red);
 		COLORS.add(Color.blue);
 		COLORS.add(Color.green);
+		COLORS.add(Color.YELLOW);
 		COLORS.add(Color.orange);
 		COLORS.add(Color.cyan);
-		COLORS.add(Color.gray);
-		COLORS.add(Color.GRAY);
-		COLORS.add(Color.gray);
-		COLORS.add(Color.gray);
+		COLORS.add(Color.magenta);
+		COLORS.add(Color.PINK);
+		
 		
 		//double G = 1; // gravitational constant
 		double G = 10;
@@ -72,7 +71,7 @@ public class Board extends JPanel{
 				
 			}
 			// Top wall bounce
-			if (p2.y() >= 331) {
+			if (p2.y() >= 335) {
 				if (p2.getDy() > 0)
 					dy = -dy;
 			}
@@ -103,7 +102,12 @@ public class Board extends JPanel{
 				
 				Runner.drawPlanets.get(i).move();
 				Planet draw = Runner.drawPlanets.get(i);
-				g.setColor(COLORS.get(i));
+				if(i < COLORS.size()){
+					g.setColor(COLORS.get(i));
+				}
+				else {
+					g.setColor(Color.gray);
+				}
 				g.fillOval((int)draw.getCoords()[0], (int)draw.getCoords()[1], 10, 10);
 				// Graphical indication of a fixed planet
 				if (draw.getFixed()) {

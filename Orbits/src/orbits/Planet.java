@@ -33,6 +33,13 @@ public class Planet {
 		this.fixed = fixed;
 	}
 
+	public Planet(Planet p) {
+		this.xpos = p.x();
+		this.ypos = p.y();
+		this.mass = p.getMass();
+		this.dx = p.getDx();
+		this.dy = p.getDy();
+	}
 
 	// Returns the X and Y pixels in the form of an array of length 2
 
