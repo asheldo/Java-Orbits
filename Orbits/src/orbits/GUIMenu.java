@@ -55,7 +55,6 @@ public class GUIMenu extends JFrame{
 	public JButton btnRestartSimulation = new JButton("Restart Simulation");
 	public JButton makeplanet;
 	public JButton btnsimulate;
-	private final JTextPane txtpnPlanets = new JTextPane();
 	public ArrayList<Planet> restartPlArrList = new ArrayList<Planet>();
 //	public JButton btnEditPlanets = new JButton("Edit Planets");
 	private final JTextField textField = new JTextField();
@@ -111,90 +110,12 @@ public class GUIMenu extends JFrame{
 			gbc_makeplanet.gridx = 0;
 			gbc_makeplanet.gridy = 0;
 			ControlBox.add(makeplanet, gbc_makeplanet);
-			makeplanet.addActionListener (new ActionListener() {public void actionPerformed(ActionEvent e) { if (Runner.handle.tabbedPane.getSelectedIndex() != 3) {
-					try{newplanet();}
-					catch(PlanetsCoincideError f) {dispfield.setText(f.getMessage());}
-			} else {
-				boolean empty = false;
+			makeplanet.addActionListener (new ActionListener() {public void actionPerformed(ActionEvent e) { 
+				creationOfPlanet();
 				
-				double tryX = -364;
-				double tryY = -323;
-				int tryMass = 0;
-				double tryDX = 0;
-				double tryDY = 0;
-				boolean tryFixed = false;
-				
-				boolean encounteredError = false;
-				
-				try{tryX = Double.parseDouble(xpos.getText());} catch (NumberFormatException a) {encounteredError = true;}
-				try{tryY = Double.parseDouble(mass.getText());} catch (NumberFormatException a) {encounteredError = true;}
-				try{tryMass = Integer.parseInt(mass.getText());} catch (NumberFormatException a) {encounteredError = true;}
-				try{tryDX = Double.parseDouble(xpos.getText());} catch (NumberFormatException a) {encounteredError = true;}
-				try{tryDX = Double.parseDouble(xpos.getText());} catch (NumberFormatException a) {encounteredError = true;}
-				
-				if(encounteredError)
-					warningtext = "\n  Error parsing contents of some\n   entry fields, default values\n       have been inserted.";
-					try{warning.dispose();} catch (NullPointerException npe) {}
-					warning = new WarningBox();
-				
-				if (String.valueOf(xvel.getText()).equalsIgnoreCase("FIXED") || (String.valueOf(yvel.getText()).equalsIgnoreCase("FIXED"))) {
-					tryDX = 0;
-					tryDY = 0;
-					tryFixed = true;
-				}
-				
-				
-				if (Runner.drawPlanets.size() == 0) {
-					empty = true;
-				}
-				
-				int errorIndex = -1;
-				
-				while(!empty){
-					for (Planet p: Runner.drawPlanets){
-						if ((Math.sqrt(Math.pow(p.x() - tryX, 2) + Math.pow(p.y() - tryY, 2)) < 10)) {
-							tryX += 11;
-							errorIndex = Runner.drawPlanets.indexOf(p);
-						} else {
-							empty = true;
-						}
-					}
-				}
-				
-				if(errorIndex != -1){
-					Planet p = Runner.drawPlanets.get(errorIndex);
-					warningtext = "\n   The planet you are trying to\n   make would coincide with the\n      planet at (" + (int)p.x() + " ," + (int)p.y() + ")";
-					try{warning.dispose();} catch (NullPointerException npe) {}
-					warning = new WarningBox();
-				}
-				
-				if(empty)
-					Runner.drawPlanets.add(new Planet(tryX, tryY, tryMass, tryDX, tryDY, tryFixed));
-				Runner.handle.tabbedPane.setSelectedIndex(0);
-				Runner.handle.tabbedPane.setSelectedIndex(3);
-			}
 			}});
 		}
 		
-//		GridBagConstraints gbc_btnEditPlanets = new GridBagConstraints();
-//		gbc_btnEditPlanets.insets = new Insets(0, 0, 5, 0);
-//		gbc_btnEditPlanets.gridx = 0;
-//		gbc_btnEditPlanets.gridy = 6;
-//		btnEditPlanets.setForeground(Color.CYAN);
-//		btnEditPlanets.setBackground(Color.BLACK);
-//		btnEditPlanets.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent editplanets) {
-//				if(!editorIsUp){
-//					isRunning = false;
-//					pEdit = new PlanetEditor();
-//					tabbedPane.setSelectedIndex(3);
-//				} else tabbedPane.setSelectedIndex(1);
-//			}
-//		});
-//		ControlBox.add(btnEditPlanets, gbc_btnEditPlanets);
-		
-		
-		// X position text box
 		{
 			xpos.setForeground(Color.CYAN);
 			xpos.setBackground(Color.DARK_GRAY);
@@ -208,6 +129,7 @@ public class GUIMenu extends JFrame{
 			ControlBox.add(xpos, gbc_xpos);
 			xpos.addFocusListener(new FocusAdapter() {
 				public void focusGained(FocusEvent f) {
+					tabbedPane.setSelectedIndex(tabbedPane.indexOfComponent(pEdit));
 					if(xpos.getText().equalsIgnoreCase("X-Coordinate"))
 					xpos.setText("");
 				}
@@ -319,10 +241,9 @@ public class GUIMenu extends JFrame{
 				
 				@Override
 				public void keyPressed(KeyEvent e) {
-					if (e.getKeyCode() == KeyEvent.VK_ENTER)
-						try{newplanet();}
-					catch(PlanetsCoincideError f) {dispfield.setText(f.getMessage());}
-					
+					if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+						creationOfPlanet();
+				}
 				}
 			});
 
@@ -435,7 +356,7 @@ public class GUIMenu extends JFrame{
 		TabPaneHolder.add(tabbedPane);
 		
 		PlanetListTab = new JPanel();
-		tabbedPane.addTab("Planet List", null, PlanetListTab, null);
+		tabbedPane.addTab("Info:", null, PlanetListTab, null);
 		PlanetListTab.setLayout(new FormLayout(new ColumnSpec[] {
 				FormFactory.UNRELATED_GAP_COLSPEC,
 				ColumnSpec.decode("661px:grow"),},
@@ -443,20 +364,10 @@ public class GUIMenu extends JFrame{
 				RowSpec.decode("90px"),
 				FormFactory.LINE_GAP_ROWSPEC,
 				RowSpec.decode("597px:grow"),}));
-		txtpnPlanets.setDisabledTextColor(Color.GRAY);
-		txtpnPlanets.setEditable(false);
-		txtpnPlanets.setFont(new Font("Yu Mincho", Font.PLAIN, 33));
-		txtpnPlanets.setBackground(new Color(128, 128, 128));
-		txtpnPlanets.setForeground(new Color(64, 224, 208));
-		txtpnPlanets.setText("\t\t\t\tPLANETS:");
-		txtpnPlanets.setEditable(false);
-		
-		
-		PlanetListTab.add(txtpnPlanets, "1, 1, 2, 1, default, fill");
 		dispfield.setForeground(Color.CYAN);
 		dispfield.setBackground(Color.DARK_GRAY);
 		
-		PlanetListTab.add(dispfield, "1, 2, 2, 2, fill, fill");
+		PlanetListTab.add(dispfield, "1, 1, 2, 3, fill, fill");
 		
 		SimulationTab = new JPanel();
 		tabbedPane.addTab("Simulation", null, SimulationTab, null);
@@ -517,7 +428,7 @@ public class GUIMenu extends JFrame{
 			
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				if (tabbedPane.getSelectedIndex()==3){
+				if (tabbedPane.getSelectedIndex()==tabbedPane.indexOfComponent(pEdit)){
 					if(!editorIsUp){
 						pEdit = new PlanetEditor();
 						editorIsUp = true;
@@ -532,7 +443,7 @@ public class GUIMenu extends JFrame{
 	}
 	
 	public void newplanet() throws PlanetsCoincideError {
-		dispfield.setText(""+Runner.drawPlanets.size());
+		//dispfield.setText(""+Runner.drawPlanets.size());
 		try {
 			for (int i = 0; i < Runner.drawPlanets.size(); i++) {
 				
@@ -648,4 +559,89 @@ public class GUIMenu extends JFrame{
 			}
 		}
 	}
+	public void creationOfPlanet() {
+		if (Runner.handle.tabbedPane.getSelectedIndex() != 3) {
+			//try{newplanet();}
+			//catch(PlanetsCoincideError f) {dispfield.setText(f.getMessage());}
+	} else {
+		boolean empty = false;
+		
+		double tryX = -364;  //boolean xTried = false;
+		double tryY = -323;  //boolean yTried = false;
+		int tryMass = 0;  //boolean massTried = false;
+		double tryDX = 0; //boolean dxTried = false;
+		double tryDY = 0; //boolean dyTried = false;
+		boolean tryFixed = false;
+		
+		
+		boolean encounteredError = false;
+		
+		try {tryX    = Double.parseDouble(xpos.getText());} catch (NumberFormatException a) {encounteredError = true;} 
+		try {tryY    = Double.parseDouble(ypos.getText());} catch (NumberFormatException a) {encounteredError = true;}
+		try {tryMass = Integer.  parseInt(mass.getText());} catch (NumberFormatException a) {encounteredError = true;}
+		try {tryDX   = Double.parseDouble(xvel.getText());} catch (NumberFormatException a) {encounteredError = true;}
+		try {tryDY   = Double.parseDouble(yvel.getText());} catch (NumberFormatException a) {encounteredError = true;}
+		
+		if(encounteredError){
+			warningtext = "\n  Error parsing contents of some\n   entry fields, default values\n       have been inserted.";
+			try{warning.dispose();} catch (NullPointerException npe) {}
+			warning = new WarningBox();
+		}
+		
+		if (String.valueOf(xvel.getText()).equalsIgnoreCase("FIXED") || (String.valueOf(yvel.getText()).equalsIgnoreCase("FIXED"))) {
+			tryDX = 0;
+			tryDY = 0;
+			tryFixed = true;
+		}
+		
+		
+		if (Runner.drawPlanets.size() == 0) {
+			empty = true;
+		}
+		
+		int errorIndex = -1;
+		
+		while(!empty){
+			for (Planet p: Runner.drawPlanets){
+				if ((Math.sqrt(Math.pow(p.x() - tryX, 2) + Math.pow(p.y() - tryY, 2)) < 10)) {
+					tryX += 11;
+					errorIndex = Runner.drawPlanets.indexOf(p);
+				} else {
+					empty = true;
+				}
+			}
+		}
+		
+		
+		if ((errorIndex != -1)&&((!xpos.getText().equalsIgnoreCase("X-Position")))&&(!(ypos.getText().equalsIgnoreCase("Y-Position")))){
+			Planet p = Runner.drawPlanets.get(errorIndex);
+			warningtext = "\n   The planet you are trying to\n   make would coincide with the\n      planet at (" + (int)p.x() + " ," + (int)p.y() + ")";
+			try{warning.dispose();} catch (NullPointerException npe) {}
+			warning = new WarningBox();
+		}
+		
+//		if(xvel.getText().equalsIgnoreCase("X-Velocity") && yvel.getText().equalsIgnoreCase("Y-Velocity")) {
+//			int numOfFixed = 0;
+//			for(Planet p : Runner.drawPlanets){
+//				if(p.getFixed()) numOfFixed ++;
+//			}
+//			if (numOfFixed == 1){
+//				
+//			}
+//			
+//		}
+		
+		if(empty)
+			Runner.drawPlanets.add(new Planet(tryX, tryY, tryMass, tryDX, tryDY, tryFixed));
+		xpos.setText("X-Coordinate");
+		ypos.setText("Y-Coordinate");
+		mass.setText("Mass");
+		xvel.setText("X-Velocity");
+		yvel.setText("Y-Velocity");
+		Runner.handle.tabbedPane.setSelectedIndex(0);
+		Runner.handle.tabbedPane.setSelectedIndex(3);
+		
+	}
+	}
+
 }

@@ -11,9 +11,6 @@ import java.util.ArrayList;
 
 public class Runner{
 	
-		
-	
-	
 	public static ArrayList<Planet> drawPlanets = new ArrayList<Planet>();
 	
 	public static GUIMenu handle = new GUIMenu("Orbits");

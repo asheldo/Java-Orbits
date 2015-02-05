@@ -23,11 +23,10 @@ import java.beans.EventHandler;
 public class PlanetEditor extends JPanel {
 
 	private static final long serialVersionUID = 1L;
-	public KeyListener listen;
+
 	//public JPanel mainWindowPanel;
 	public JTable planetsTable;
-	public MouseListener mlisten;
-	public DefaultTableModel repaint;
+
 	public static ArrayList<Planet> alp = new ArrayList<Planet>();
 	
 	
@@ -65,7 +64,7 @@ public class PlanetEditor extends JPanel {
 		Runner.handle.tabbedPane.addChangeListener(new ChangeListener() {
 				
 				@Override
-				public void stateChanged(ChangeEvent e) {
+				public void stateChanged(ChangeEvent f) {
 					
 						if (Runner.handle.editorIsUp){
 							Runner.handle.pEdit.updateAL();
