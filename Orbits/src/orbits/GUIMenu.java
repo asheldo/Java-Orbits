@@ -14,9 +14,9 @@ import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
 
-import net.miginfocom.swing.MigLayout;
+//mport net.miginfocom.swing.MigLayout;
 
-import javax.swing.table.DefaultTableModel;
+//import javax.swing.table.DefaultTableModel;
 
 public class GUIMenu extends JFrame{
 	

@@ -137,9 +137,9 @@ public class Board extends JPanel{
 				if(Math.sqrt(Math.pow(p3.x()-p1.x(), 2) + Math.pow(p3.y()-p1.y(), 2)) <= 10 && Math.pow(p3.x()-p1.x(), 2) + Math.pow(p3.y()-p1.y(), 2) != 0) {
 					Runner.drawPlanets.get(i).setFixed(true); //fix planets
 					
-					double xp1p3 = p3.x() - p1.x();
-					double yp1p3 = p3.y() - p1.y();
-					double dp1p3 = Math.pow(Math.pow(yp1p3, 2) + Math.pow(xp1p3, 2) , .5);
+//					double xp1p3 = p3.x() - p1.x();
+//					double yp1p3 = p3.y() - p1.y();
+//					double dp1p3 = Math.pow(Math.pow(yp1p3, 2) + Math.pow(xp1p3, 2) , .5);
 					
 					
 				}

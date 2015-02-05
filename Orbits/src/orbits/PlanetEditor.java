@@ -1,24 +1,24 @@
 package orbits;
 
 import javax.swing.*;
-import javax.swing.Timer;
+//import javax.swing.Timer;
 import javax.swing.border.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.*;
 
-import org.w3c.dom.events.Event;
-import org.w3c.dom.events.EventListener;
+//import org.w3c.dom.events.Event;
+//import org.w3c.dom.events.EventListener;
 
 import java.awt.*;
-import java.awt.event.KeyListener;
+//import java.awt.event.KeyListener;
 import java.util.*;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.beans.EventHandler;
+//import java.awt.event.ActionListener;
+//import java.awt.event.ActionEvent;
+//import java.awt.event.KeyEvent;
+//import java.awt.event.MouseEvent;
+//import java.awt.event.MouseListener;
+//import java.beans.EventHandler;
 
 public class PlanetEditor extends JPanel {
 
