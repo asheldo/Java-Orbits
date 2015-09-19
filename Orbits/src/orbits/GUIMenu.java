@@ -277,7 +277,6 @@ public class GUIMenu extends JFrame{
 			gbc_btnResetSimulation.fill = GridBagConstraints.BOTH;
 			gbc_btnResetSimulation.gridx = 0;
 			gbc_btnResetSimulation.gridy = 10;
-			btnResetSimulation.setIcon(new ImageIcon(GUIMenu.class.getResource("/com/sun/javafx/scene/web/skin/Undo_16x16_JFX.png")));
 			btnResetSimulation.setFont(new Font("Tahoma", Font.BOLD, 11));
 			btnResetSimulation.setForeground(Color.CYAN);
 			btnResetSimulation.setBackground(Color.BLACK);
@@ -291,10 +290,9 @@ public class GUIMenu extends JFrame{
 			// Simulate button
 			{
 				JButton btnSimulate = new JButton("Simulate");
-				btnSimulate.setSelectedIcon(new ImageIcon(GUIMenu.class.getResource("/com/sun/javafx/webkit/prism/resources/mediaPause.png")));
+
 				btnSimulate.setForeground(Color.CYAN);
 				btnSimulate.setBackground(Color.BLACK);
-				btnSimulate.setIcon(new ImageIcon(GUIMenu.class.getResource("/com/sun/javafx/webkit/prism/resources/mediaPlayDisabled.png")));
 				GridBagConstraints gbc_btnSimulate = new GridBagConstraints();
 				gbc_btnSimulate.fill = GridBagConstraints.BOTH;
 				gbc_btnSimulate.insets = new Insets(0, 0, 5, 0);
@@ -458,11 +456,17 @@ public class GUIMenu extends JFrame{
 				
 				Runner.drawPlanets.add(new Planet(Double.parseDouble(xpos.getText()),
 						Double.parseDouble(ypos.getText()),
-						Integer.parseInt(mass.getText()), 0, 0, true));
+						Integer.parseInt(mass.getText()),
+						0,
+						0,
+						true));
 				
 				restartPlArrList.add(new Planet(Double.parseDouble(xpos.getText()),
 						Double.parseDouble(ypos.getText()),
-						Integer.parseInt(mass.getText()), 0, 0, true));
+						Integer.parseInt(mass.getText()),
+						0,
+						0,
+						true));
 				
 			} else {
 				
@@ -470,13 +474,15 @@ public class GUIMenu extends JFrame{
 					Double.parseDouble(ypos.getText()),
 					Integer.parseInt(mass.getText()),
 					Double.parseDouble(xvel.getText()),
-					Double.parseDouble(yvel.getText()), false));
+					Double.parseDouble(yvel.getText()),
+					false));
 			
 			restartPlArrList.add(new Planet(Double.parseDouble(xpos.getText()),
 					Double.parseDouble(ypos.getText()),
 					Integer.parseInt(mass.getText()),
 					Double.parseDouble(xvel.getText()),
-					Double.parseDouble(yvel.getText()), false));
+					Double.parseDouble(yvel.getText()),
+					false));
 			}
 			
 //			String newbox = ""
@@ -518,6 +524,7 @@ public class GUIMenu extends JFrame{
 			dispfield.setText(d);
 			isRunning = false;
 			tabbedPane.setSelectedIndex(3);
+			tabbedPane.setEnabled(true);
 		} else if (restartindex == 1) {
 			Runner.drawPlanets = new ArrayList<Planet>();
 			Runner.drawPlanets.add(new Planet(0, 0, 5000, 0, 0, true));
@@ -561,8 +568,7 @@ public class GUIMenu extends JFrame{
 	}
 	public void creationOfPlanet() {
 		if (Runner.handle.tabbedPane.getSelectedIndex() != 3) {
-			//try{newplanet();}
-			//catch(PlanetsCoincideError f) {dispfield.setText(f.getMessage());}
+			//TODO: mouse listener for tabbedPane at index 1 which is the board
 	} else {
 		boolean empty = false;
 		
@@ -643,5 +649,6 @@ public class GUIMenu extends JFrame{
 		
 	}
 	}
+
 
 }

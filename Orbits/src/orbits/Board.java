@@ -5,7 +5,7 @@ import java.awt.*;
 import java.util.ArrayList;
 
 public class Board extends JPanel{
-	public static double dt = .05;
+	public static double dt = .1;
 	private static final long serialVersionUID = 1L;
 	
 	
@@ -132,16 +132,25 @@ public class Board extends JPanel{
 			
 			
 			
-			for (Planet p3 : Runner.drawPlanets) {
+			for (int j = 0; j < Runner.drawPlanets.size(); j++) {
+				p2 = Runner.drawPlanets.get(j);
 				// If the distance is closer than the 2 planet radii (one diameter)
-				if(Math.sqrt(Math.pow(p3.x()-p1.x(), 2) + Math.pow(p3.y()-p1.y(), 2)) <= 10 && Math.pow(p3.x()-p1.x(), 2) + Math.pow(p3.y()-p1.y(), 2) != 0) {
-					Runner.drawPlanets.get(i).setFixed(true); //fix planets
+				if(Math.sqrt(Math.pow(p2.x()-p1.x(), 2) + Math.pow(p2.y()-p1.y(), 2)) <= 15 && i != j) {
+					double vx1 = p1.getFixed() ? 0 : p1.getDx();
+					double vy1 = p1.getFixed() ? 0 : p1.getDy();
+					double vx2 = p2.getFixed() ? 0 : p2.getDx();
+					double vy2 = p2.getFixed() ? 0 : p2.getDy();
+					double m1 = p1.getMass();
+					double m2 = p2.getMass();
+					double vxc = (vx1 * m1 + vx2 * m2)/(m1 + m2);
+					double vyc = (vy1 * m1 + vy2 * m2)/(m1 + m2);
 					
-//					double xp1p3 = p3.x() - p1.x();
-//					double yp1p3 = p3.y() - p1.y();
-//					double dp1p3 = Math.pow(Math.pow(yp1p3, 2) + Math.pow(xp1p3, 2) , .5);
-					
-					
+					Runner.drawPlanets.get(i).setDx((2 * m2 * (vx2 - vxc) + m1 * (vx1 - vxc) - m2 * (vx1 - vxc)) / (m1 + m2) + vxc);
+					Runner.drawPlanets.get(i).setDy((2 * m2 * (vy2 - vyc) + m1 * (vy1 - vyc) - m2 * (vy1 - vyc)) / (m1 + m2) + vyc);
+					Runner.drawPlanets.get(j).setDx((2 * m1 * (vx1 - vxc) + m2 * (vx2 - vxc) - m1 * (vx2 - vxc)) / (m1 + m2) + vxc);
+					Runner.drawPlanets.get(j).setDy((2 * m1 * (vy1 - vyc) + m2 * (vy2 - vyc) - m1 * (vy2 - vyc)) / (m1 + m2) + vyc);
+					Runner.drawPlanets.get(i).move();
+					Runner.drawPlanets.get(j).move();
 				}
 			}
 			
@@ -170,7 +179,7 @@ public class Board extends JPanel{
 //					Runner.handle.recallConfig();
 //			}
 			
-			// This repaint command is what keeps the simulation running, along with the time listener
+			// This repaint command is what keeps the simulation running
 			Runner.handle.repaint();
 			
 		} else {
