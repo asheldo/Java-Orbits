@@ -5,7 +5,7 @@ import java.awt.*;
 import java.util.ArrayList;
 
 public class Board extends JPanel{
-	public static double dt = .1;
+	public static double dt = .05;
 	private static final long serialVersionUID = 1L;
 	
 	
