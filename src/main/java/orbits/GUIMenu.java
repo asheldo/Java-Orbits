@@ -390,7 +390,7 @@ public class GUIMenu extends JFrame{
 			recallConfig();
 			}
 		});
-		CircularOrbit.setIcon(new ImageIcon(GUIMenu.class.getResource("/orbits/CircularOrbit.png")));
+		CircularOrbit.setIcon(new ImageIcon(GUIMenu.class.getResource("/CircularOrbit.png")));
 		CircularOrbit.setBounds(10, 11, 51, 51);
 		PresetOrbitChooser.add(CircularOrbit);
 		
@@ -401,13 +401,13 @@ public class GUIMenu extends JFrame{
 			recallConfig();
 			}
 		});
-		LinearOrbit.setIcon(new ImageIcon(GUIMenu.class.getResource("/orbits/LinearOrbit.png")));
+		LinearOrbit.setIcon(new ImageIcon(GUIMenu.class.getResource("/LinearOrbit.png")));
 		LinearOrbit.setBounds(10, 73, 51, 51);
 		PresetOrbitChooser.add(LinearOrbit);
 		
 		JButton QuadOrbit = new JButton("");
 		QuadOrbit.setBounds(10, 135, 51, 51);
-		QuadOrbit.setIcon(new ImageIcon(GUIMenu.class.getResource("/orbits/QuadOrbit.png")));
+		QuadOrbit.setIcon(new ImageIcon(GUIMenu.class.getResource("/QuadOrbit.png")));
 		QuadOrbit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 			restartindex = 3;
