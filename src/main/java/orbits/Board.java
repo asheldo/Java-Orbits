@@ -1,14 +1,25 @@
 package orbits;
 
+import orbits.GUIMenu;
+import orbits.Simulation;
+import orbits.Planet;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 
 public class Board extends JPanel{
-	public static double dt = .05;
+
+	public static class BoardConstants {
+		// gravitational constant
+		final double G = 9.8; // 10
+		final double dt = .05;
+	}
+
+	private BoardConstants consts = new BoardConstants();
+
 	private static final long serialVersionUID = 1L;
-	
-	
+
 	private final ArrayList<Color> COLORS = new ArrayList<Color>();
 	@Override
 	public int getWidth() {
@@ -30,7 +41,6 @@ public class Board extends JPanel{
 		g.setColor(Color.gray);
 		g.drawRect(5, 5, 735, 669);
 		
-		
 		COLORS.add(Color.red);
 		COLORS.add(Color.blue);
 		COLORS.add(Color.green);
@@ -39,22 +49,17 @@ public class Board extends JPanel{
 		COLORS.add(Color.cyan);
 		COLORS.add(Color.magenta);
 		COLORS.add(Color.PINK);
-		
-		
-		//double G = 1; // gravitational constant
-		double G = 10;
-		
-		
+
 		double dx;
 		double dy;
-		Planet p1;
-		Planet p2;
-		for(int i = 0; i < Runner.drawPlanets.size(); i++) {
-			p2 = Runner.drawPlanets.get(i);
+		Simulation sim = Simulation.getInstance();
+		GUIMenu board = sim.getHandle();
+		for(int i = 0; i < sim.getPlanetCount(); i++) {
+			Planet p2 = sim.getDrawPlanet(i);
 			dx = p2.getDx();
 			dy = p2.getDy();
-			for (int k = 0; k < Runner.drawPlanets.size(); k++) {
-				p1 = Runner.drawPlanets.get(k);
+			for (int k = 0; k < sim.getPlanetCount(); k++) {
+				Planet p1 = sim.getDrawPlanet(k);
 				if (i == k) {
 					dx += 0;
 					dy += 0;
@@ -63,10 +68,8 @@ public class Board extends JPanel{
 					double dpy = p1.y() - p2.y();
 					double rng2 = Math.pow(dpx, 2) + Math.pow(dpy, 2);
 					
-					dx += dt*G*p1.getMass()/(Math.pow(rng2, 1.5))*(dpx);
-					
-					dy += dt*G*p1.getMass()/(Math.pow(rng2, 1.5))*(dpy);
-					
+					dx += consts.dt * consts.G * p1.getMass()/(Math.pow(rng2, 1.5))*(dpx);
+					dy += consts.dt * consts.G * p1.getMass()/(Math.pow(rng2, 1.5))*(dpy);
 				}
 				
 			}
@@ -90,50 +93,46 @@ public class Board extends JPanel{
 				if (p2.getDx() < 0)
 					dx = -dx;
 			}
-			Runner.drawPlanets.get(i).setDx(dx);
+			sim.getDrawPlanet(i).setDx(dx);
 			
-			Runner.drawPlanets.get(i).setDy(dy);
+			sim.getDrawPlanet(i).setDy(dy);
 			
 		}
 		// Moves
-		for (int i = 0; i < Runner.drawPlanets.size(); i++) {
-			if (Runner.handle.tabbedPane.getSelectedIndex() == 1){
-				p1 = Runner.drawPlanets.get(i);
-				
-				Runner.drawPlanets.get(i).move();
-				Planet draw = Runner.drawPlanets.get(i);
+		for (int i = 0; i < sim.getPlanetCount(); i++) {
+			Planet p1 = sim.getDrawPlanet(i);
+			if (board.tabbedPane.getSelectedIndex() == 1){
+				p1.move(consts.dt);
 				if(i < COLORS.size()){
 					g.setColor(COLORS.get(i));
 				}
 				else {
 					g.setColor(Color.gray);
 				}
-				g.fillOval((int)draw.getCoords()[0], (int)draw.getCoords()[1], 10, 10);
+				g.fillOval((int) p1.getCoords()[0], (int) p1.getCoords()[1], 10, 10);
 				// Graphical indication of a fixed planet
-				if (draw.getFixed()) {
+				if (p1.getFixed()) {
 					g.setColor(Color.black);
-					g.drawOval((int)draw.getCoords()[0], (int)draw.getCoords()[1], 10, 10);
+					g.drawOval((int)p1.getCoords()[0], (int)p1.getCoords()[1], 10, 10);
 					
 				}
-			} else if (Runner.handle.tabbedPane.getSelectedIndex() == 0) {
-				Runner.drawPlanets.get(i).move();
+			} else if (board.tabbedPane.getSelectedIndex() == 0) {
+				p1.move(consts.dt);
 				String displaytext = "";
-				for(int k = 0; k < Runner.drawPlanets.size(); k++) {
-					String temp = "  Index: " + (k+1) + "\t" + Runner.drawPlanets.get(k).toString() + "\n";
+				for(int k = 0; k < sim.getPlanetCount(); k++) {
+					String temp = "  Index: " + (k+1) + "\t" + sim.getDrawPlanet(k).toString() + "\n";
 					displaytext += temp;
 				}
-				Runner.handle.dispfield.setText(displaytext);
+				board.dispfield.setText(displaytext);
 			}
 		}
 		
 		// Checks for collisions
-		for (int i = 0; i < Runner.drawPlanets.size(); i++) {
-			p1 = Runner.drawPlanets.get(i);
-			
-			
-			
-			for (int j = 0; j < Runner.drawPlanets.size(); j++) {
-				p2 = Runner.drawPlanets.get(j);
+		for (int i = 0; i < sim.getPlanetCount(); i++) {
+			Planet p1 = sim.getDrawPlanet(i);
+
+			for (int j = 0; j < sim.getPlanetCount(); j++) {
+				Planet p2 = sim.getDrawPlanet(j);
 				// If the distance is closer than the 2 planet radii (one diameter)
 				if(Math.sqrt(Math.pow(p2.x()-p1.x(), 2) + Math.pow(p2.y()-p1.y(), 2)) <= 15 && i != j) {
 					double vx1 = p1.getFixed() ? 0 : p1.getDx();
@@ -145,33 +144,25 @@ public class Board extends JPanel{
 					double vxc = (vx1 * m1 + vx2 * m2)/(m1 + m2);
 					double vyc = (vy1 * m1 + vy2 * m2)/(m1 + m2);
 					
-					Runner.drawPlanets.get(i).setDx((2 * m2 * (vx2 - vxc) + m1 * (vx1 - vxc) - m2 * (vx1 - vxc)) / (m1 + m2) + vxc);
-					Runner.drawPlanets.get(i).setDy((2 * m2 * (vy2 - vyc) + m1 * (vy1 - vyc) - m2 * (vy1 - vyc)) / (m1 + m2) + vyc);
-					Runner.drawPlanets.get(j).setDx((2 * m1 * (vx1 - vxc) + m2 * (vx2 - vxc) - m1 * (vx2 - vxc)) / (m1 + m2) + vxc);
-					Runner.drawPlanets.get(j).setDy((2 * m1 * (vy1 - vyc) + m2 * (vy2 - vyc) - m1 * (vy2 - vyc)) / (m1 + m2) + vyc);
-					Runner.drawPlanets.get(i).move();
-					Runner.drawPlanets.get(j).move();
+					p1.setDx((2 * m2 * (vx2 - vxc) + m1 * (vx1 - vxc) - m2 * (vx1 - vxc)) / (m1 + m2) + vxc);
+					p1.setDy((2 * m2 * (vy2 - vyc) + m1 * (vy1 - vyc) - m2 * (vy1 - vyc)) / (m1 + m2) + vyc);
+					p2.setDx((2 * m1 * (vx1 - vxc) + m2 * (vx2 - vxc) - m1 * (vx2 - vxc)) / (m1 + m2) + vxc);
+					p2.setDy((2 * m1 * (vy1 - vyc) + m2 * (vy2 - vyc) - m1 * (vy2 - vyc)) / (m1 + m2) + vyc);
+					p1.move(consts.dt);
+					p2.move(consts.dt);
 				}
 			}
-			
-			
-			
 		}
-		
-		
-		
-		
-		
-		if(Runner.handle.isRunning){
-			
-			Runner.handle.makeplanet.setEnabled(false);
-			Runner.handle.xpos.setEnabled(false);
-			Runner.handle.ypos.setEnabled(false);
-			Runner.handle.mass.setEnabled(false);
-			Runner.handle.xvel.setEnabled(false);
-			Runner.handle.yvel.setEnabled(false);
-			Runner.handle.tabbedPane.setEnabled(false);
-			Runner.handle.btnResetSimulation.setEnabled(false);
+
+		if(board.isRunning){
+			board.makeplanet.setEnabled(false);
+			board.xpos.setEnabled(false);
+			board.ypos.setEnabled(false);
+			board.mass.setEnabled(false);
+			board.xvel.setEnabled(false);
+			board.yvel.setEnabled(false);
+			board.tabbedPane.setEnabled(false);
+			board.btnResetSimulation.setEnabled(false);
 //			Runner.handle.btnEditPlanets.setEnabled(false);
 //			
 //			if (Runner.handle.restartindex == 3) {
@@ -180,26 +171,26 @@ public class Board extends JPanel{
 //			}
 			
 			// This repaint command is what keeps the simulation running
-			Runner.handle.repaint();
+			board.repaint();
 			
 		} else {
-			
-		Runner.handle.makeplanet.setEnabled(true);
-		Runner.handle.xpos.setEnabled(true);
-		Runner.handle.ypos.setEnabled(true);
-		Runner.handle.mass.setEnabled(true);
-		Runner.handle.xvel.setEnabled(true);
-		Runner.handle.yvel.setEnabled(true);
-		Runner.handle.tabbedPane.setEnabled(true);
-		Runner.handle.btnResetSimulation.setEnabled(true);
-		
-		String displaytext = "";
-		for(int k = 0; k < Runner.drawPlanets.size(); k++) {
-			String temp = "  Index: " + (k+1) + "\t" + Runner.drawPlanets.get(k).toString() + "\n";
-			displaytext += temp;
-		}
-		
-		Runner.handle.dispfield.setText(displaytext);
+
+			board.makeplanet.setEnabled(true);
+			board.xpos.setEnabled(true);
+			board.ypos.setEnabled(true);
+			board.mass.setEnabled(true);
+			board.xvel.setEnabled(true);
+			board.yvel.setEnabled(true);
+			board.tabbedPane.setEnabled(true);
+			board.btnResetSimulation.setEnabled(true);
+
+			String displaytext = "";
+			for(int k = 0; k < sim.getPlanetCount(); k++) {
+				String temp = "  Index: " + (k+1) + "\t" + sim.getDrawPlanet(k).toString() + "\n";
+				displaytext += temp;
+			}
+
+			board.dispfield.setText(displaytext);
 		}
 		
 	}

@@ -1,5 +1,9 @@
 package orbits;
 
+import orbits.GUIMenu;
+import orbits.Simulation;
+import orbits.Planet;
+
 import javax.swing.*;
 //import javax.swing.Timer;
 import javax.swing.border.*;
@@ -28,18 +32,15 @@ public class PlanetEditor extends JPanel {
 	public JTable planetsTable;
 
 	public static ArrayList<Planet> alp = new ArrayList<Planet>();
-	
-	
-	
-	
+
 	public PlanetEditor() {
 		
 		alp = new ArrayList<Planet>();
-		
-		for(int i1 = 0; i1 < Runner.drawPlanets.size(); i1++)
+		Simulation sim = Simulation.getInstance();
+		for(int i1 = 0; i1 < sim.getPlanetCount(); i1++)
 			alp.add(null);
-		for(int i = 0; i < Runner.drawPlanets.size(); i++)
-			alp.set(i, Runner.drawPlanets.get(i));
+		for(int i = 0; i < sim.getPlanetCount(); i++)
+			alp.set(i, sim.getDrawPlanet(i));
 		
 		
 		this.setForeground(new Color(0, 0, 0));
@@ -61,15 +62,15 @@ public class PlanetEditor extends JPanel {
 		
 		planetsTable.setBounds(10, 5, 750, 683);
 		this.add(planetsTable);
-		Runner.handle.tabbedPane.addChangeListener(new ChangeListener() {
+
+		final GUIMenu board = sim.getHandle();
+		board.tabbedPane.addChangeListener(new ChangeListener() {
 				
 				@Override
 				public void stateChanged(ChangeEvent f) {
-					
-						if (Runner.handle.editorIsUp){
-							Runner.handle.pEdit.updateAL();
-							Runner.handle.editorIsUp = false;
-							
+						if (board.editorIsUp){
+							board.pEdit.updateAL();
+							board.editorIsUp = false;
 						}
 				}
 			});
@@ -115,7 +116,7 @@ public class PlanetEditor extends JPanel {
 	
 	public void updateAL() {
 		for (int row = 0;
-				row < PlanetEditor.alp.size();
+				row < alp.size();
 				row++){
 			try{
 				alp.get(row).setX(Double.parseDouble(String.valueOf(planetsTable.getValueAt(row+1, 1))));
@@ -133,9 +134,9 @@ public class PlanetEditor extends JPanel {
 				
 			} catch (NumberFormatException g) {g.getMessage(); g.printStackTrace();}
 		}
-			for(int i2 = 0; i2 < alp.size(); i2++){
-				Runner.drawPlanets.set(i2, alp.get(i2));
-			}
-		
+		Simulation sim = Simulation.getInstance();
+		for (int i2 = 0; i2 < alp.size(); i2++){
+			sim.setPlanet(i2, alp.get(i2));
+		}
 	}
 }

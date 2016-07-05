@@ -1,5 +1,7 @@
 package orbits;
 
+import orbits.Planet;
+
 public class PlanetsCoincideError extends Exception {
 
 	/* Who knows what the heck this thing-a-ma-bobber does?! I just put it in
@@ -7,7 +9,8 @@ public class PlanetsCoincideError extends Exception {
 									 |
 									 v     */
 	private static final long serialVersionUID = 1L;
-	
+	// It's b/c Exception is Serializable -^  ;)
+
 	Planet p;
 	
 	public PlanetsCoincideError(Planet p) {

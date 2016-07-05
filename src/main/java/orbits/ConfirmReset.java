@@ -47,26 +47,30 @@ public class ConfirmReset extends JDialog {
 			fl_buttonPane.setVgap(3);
 			buttonPane.setLayout(fl_buttonPane);
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
+
+			final Simulation sim = Simulation.getInstance();
+			final GUIMenu board = sim.getHandle();
+
 			{
 				JButton okButton = new JButton("OK");
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent arg0) {
-						Runner.handle.dispfield.setText("\n\t Welcome to orbit simulator! Enter X and Y coordinates, mass, and X and Y component velocities and click\r\n\tNew Planet to add it to the array list of Planets. Click simulate to start/stop the simulation. To make a planet\r\n\t               ignore the gravity of other planets, enter fixed into either the X-Velocity or Y-Velocity field.");
-						Runner.handle.tabbedPane.setSelectedIndex(0);
-						Runner.handle.restartindex = 0;
-						Runner.handle.makeplanet.setEnabled(true);
-						Runner.handle.xpos.setEnabled(true);
-						Runner.handle.ypos.setEnabled(true);
-						Runner.handle.mass.setEnabled(true);
-						Runner.handle.xvel.setEnabled(true);
-						Runner.handle.yvel.setEnabled(true);
-						Runner.handle.tabbedPane.setEnabled(true);
-						Runner.handle.btnResetSimulation.setEnabled(true);
-						Runner.handle.restartPlArrList = new ArrayList<Planet>();
+						board.dispfield.setText("\n\t Welcome to orbit simulator! Enter X and Y coordinates, mass, and X and Y component velocities and click\r\n\tNew Planet to add it to the array list of Planets. Click simulate to start/stop the simulation. To make a planet\r\n\t               ignore the gravity of other planets, enter fixed into either the X-Velocity or Y-Velocity field.");
+						board.tabbedPane.setSelectedIndex(0);
+						board.restartindex = 0;
+						board.makeplanet.setEnabled(true);
+						board.xpos.setEnabled(true);
+						board.ypos.setEnabled(true);
+						board.mass.setEnabled(true);
+						board.xvel.setEnabled(true);
+						board.yvel.setEnabled(true);
+						board.tabbedPane.setEnabled(true);
+						board.btnResetSimulation.setEnabled(true);
+						board.restartPlArrList = new ArrayList<Planet>();
 						PlanetEditor.alp = new ArrayList<Planet>();
-						Runner.drawPlanets = new ArrayList<Planet>();
-						Runner.handle.editorIsUp = false;
-						Runner.handle.crdb.dispose();
+						sim.restart();
+						board.editorIsUp = false;
+						board.crdb.dispose();
 					}
 				});
 				okButton.setBackground(Color.DARK_GRAY);
@@ -79,7 +83,7 @@ public class ConfirmReset extends JDialog {
 				JButton cancelButton = new JButton("Cancel");
 				cancelButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						Runner.handle.crdb.dispose();
+						board.crdb.dispose();
 					}
 				});
 				cancelButton.setForeground(Color.CYAN);

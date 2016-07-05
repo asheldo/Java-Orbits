@@ -20,10 +20,11 @@ public class Planet {
 	private double dy;
 	private boolean fixed;
 
+	private Board board;
 
 	// Initializes a planet with a given x and y coordinate, mass, and x and y velocity components
 
-	public Planet(double xpos, double ypos, int mass, double dx, double dy, boolean fixed) {
+	protected Planet(double xpos, double ypos, int mass, double dx, double dy, boolean fixed) {
 
 		this.xpos = xpos;
 		this.ypos = ypos;
@@ -39,15 +40,21 @@ public class Planet {
 		this.mass = p.getMass();
 		this.dx = p.getDx();
 		this.dy = p.getDy();
+
+		this.fixed = p.getFixed();
+		this.setBoard(p.getBoard());
 	}
 
 	// Returns the X and Y pixels in the form of an array of length 2
 
 	public double[] getCoords() {
-
-		return  new double[] {(Runner.handle.board.getWidth()/2) + xpos - 5, Runner.handle.board.getHeight()/2 - ypos - 5};
+		return  new double[] {(getBoard().getWidth()/2) + xpos - 5, getBoard().getHeight()/2 - ypos - 5};
 	}
-	
+
+	private Board getBoard() {
+		return board;
+	}
+
 	// Sets planet's coordinates
 	public void setCoords(double x, double y) {
 		this.xpos = x;
@@ -120,11 +127,14 @@ public class Planet {
 	}
 
 	// Adds velocity values to position
-	public void move() {
+	public void move(double boardDT) {
 		if(!this.fixed){
-		this.xpos += Board.dt*this.dx;
-		this.ypos += Board.dt*this.dy;
+			this.xpos += boardDT * this.dx;
+			this.ypos += boardDT * this.dy;
 		}
 	}
 
+	public void setBoard(Board board) {
+		this.board = board;
+	}
 }

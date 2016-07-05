@@ -1,5 +1,7 @@
 package orbits;
 
+import orbits.Simulation;
+
 import java.awt.BorderLayout;
 //import java.awt.EventQueue;
 
@@ -36,7 +38,7 @@ public class WarningBox extends JFrame{
 		textArea.setForeground(new Color(255, 204, 0));
 		textArea.setBackground(Color.DARK_GRAY);
 		contentPane.add(textArea, BorderLayout.CENTER);
-		textArea.setText(Runner.handle.warningtext);
+		textArea.setText(Simulation.getInstance().getHandle().warningtext);
 	}
 
 }
