@@ -16,6 +16,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
 import orbits.model.Planet;
 import orbits.Simulation;
+import orbits.model.PlanetBuilder;
 
 public class GUIMenu extends JFrame{
 	
@@ -36,7 +37,7 @@ public class GUIMenu extends JFrame{
 	public TextField xvel = new TextField();
 	public TextField yvel = new TextField();
 	
-	public Board board = new Board();
+	private Board board = new Board();
 
 	public int restartindex;
 
@@ -89,9 +90,19 @@ public class GUIMenu extends JFrame{
 		layoutOrbitChooser();
 		layoutEditor();
 
-		dispfield.setText("\n\t Welcome to orbit simulator! "
-				+ "Enter X and Y coordinates, mass, and X and Y component velocities and click\r\n\tNew Planet to add it to the array list of Planets. Click simulate to start/stop the simulation. "
+		welcome();
+
+	}
+
+	protected void welcome() {
+		changeDisplayText("\n\t Welcome to orbit simulator! "
+				+ "Enter X and Y coordinates, mass, and X and Y component velocities and click\r\n\t"
+				+ "New Planet to add it to the array list of Planets. Click simulate to start/stop the simulation. "
 				+ "To make a planet\r\n\t ignore the gravity of other planets, enter 'Fixed' into either the X-Velocity or Y-Velocity field.");
+	}
+
+	protected void changeDisplayText(String t) {
+		dispfield.setText(t);
 	}
 
 	protected void layoutEditor() {
@@ -149,10 +160,10 @@ public class GUIMenu extends JFrame{
 		panel_2.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 		SimulationTab.add(panel_2);
 		panel_2.setLayout(new BoxLayout(panel_2, BoxLayout.X_AXIS));
-		board.setSize(panel_2.getSize());
-		panel_2.add(board);
-		board.setBackground(Color.DARK_GRAY);
-		board.setLayout(new BoxLayout(board, BoxLayout.X_AXIS));
+		getBoard().setSize(panel_2.getSize());
+		panel_2.add(getBoard());
+		getBoard().setBackground(Color.DARK_GRAY);
+		getBoard().setLayout(new BoxLayout(getBoard(), BoxLayout.X_AXIS));
 	}
 
 	protected void layoutOrbitChooser() {
@@ -203,7 +214,7 @@ public class GUIMenu extends JFrame{
 				String temp = "  Index: " + (i+1) + "\t" + Simulation.getInstance().getDrawPlanet(i).toString() + "\n";
 				d += temp;
 			}
-			dispfield.setText(d);
+			changeDisplayText(d);
 			isRunning = false;
 			tabbedPane.setSelectedIndex(3);
 			tabbedPane.setEnabled(true);
@@ -257,7 +268,14 @@ public class GUIMenu extends JFrame{
 			//TODO: mouse listener for tabbedPane at index 1 which is the board
 
 		} else {
+			boolean encounteredError = false;
 			boolean empty = false;
+			List<Planet> planets = sim.getDrawPlanets();
+			if (planets.size() == 0) {
+				empty = true;
+			}
+			int errorIndex = -1;
+
 
 			double tryX = -364;  //boolean xTried = false;
 			double tryY = -323;  //boolean yTried = false;
@@ -265,8 +283,6 @@ public class GUIMenu extends JFrame{
 			double tryDX = 0; //boolean dxTried = false;
 			double tryDY = 0; //boolean dyTried = false;
 			boolean tryFixed = false;
-
-			boolean encounteredError = false;
 
 			try {tryX    = Double.parseDouble(xpos.getText());} catch (NumberFormatException a) {encounteredError = true;}
 			try {tryY    = Double.parseDouble(ypos.getText());} catch (NumberFormatException a) {encounteredError = true;}
@@ -286,29 +302,11 @@ public class GUIMenu extends JFrame{
 				tryFixed = true;
 			}
 
-			List<Planet> planets = sim.getDrawPlanets();
-			if (planets.size() == 0) {
+			errorIndex = new PlanetBuilder().notEmpty(planets, tryX, tryY);
+			if (errorIndex == -1) {
 				empty = true;
 			}
-
-			int errorIndex = -1;
-
-			while(!empty){
-				int i = 0;
-				for (Planet p: planets) {
-					if ((Math.sqrt(Math.pow(p.x() - tryX, 2) + Math.pow(p.y() - tryY, 2))
-							< 10)) {
-						tryX += 11;
-						errorIndex = i;
-					} else {
-						empty = true;
-					}
-					++i;
-				}
-			}
-
-
-			if ((errorIndex != -1)&&((!xpos.getText().equalsIgnoreCase("X-Position")))
+			else if ((errorIndex != -1)&&((!xpos.getText().equalsIgnoreCase("X-Position")))
 					&& (!(ypos.getText().equalsIgnoreCase("Y-Position")))){
 				Planet p = sim.getDrawPlanet(errorIndex);
 				warningtext = "\n   The planet you are trying to\n   make would coincide with the\n      planet at (" + (int)p.x() + " ," + (int)p.y() + ")";
@@ -342,4 +340,7 @@ public class GUIMenu extends JFrame{
 	}
 
 
+	public Board getBoard() {
+		return board;
+	}
 }

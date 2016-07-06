@@ -24,7 +24,7 @@ public class Runner{
 		EventQueue.invokeLater(new Runnable()
 			{
 				public void run() {
-					sim.getHandle().start();
+					sim.start();
 				}
 			}
 		);

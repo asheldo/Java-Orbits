@@ -1,5 +1,7 @@
 package orbits;
 
+import orbits.calc.Collisions;
+import orbits.calc.Gravity;
 import orbits.model.Planet;
 import orbits.model.PlanetBuilder;
 import orbits.ui.GUIMenu;
@@ -10,11 +12,15 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Created by amunzer on 7/4/16.
+ * Created by asheldon on 7/4/16.
+ *
+ * TODO Where is
  */
 public class Simulation {
 
     private static Simulation simulation = new Simulation();
+    private Collisions collisions = new Collisions(this);
+    private Gravity gravity = new Gravity(this);
 
     public static Simulation getInstance() {
         return simulation;
@@ -27,7 +33,7 @@ public class Simulation {
     private Simulation() {
         this.drawPlanets = new ArrayList<Planet>();
         this.handle = new GUIMenu("Orbits");
-        this.planetBuilder = new PlanetBuilder(handle.board);
+        this.planetBuilder = new PlanetBuilder(handle.getBoard());
     }
 
     public GUIMenu getHandle() {
@@ -90,5 +96,17 @@ public class Simulation {
 
     public void restart() {
         setDrawPlanets(new ArrayList<Planet>());
+    }
+
+    public void start() {
+        handle.start();
+    }
+
+    public Collisions getCollisions() {
+        return collisions;
+    }
+
+    public Gravity getGravity() {
+        return gravity;
     }
 }
