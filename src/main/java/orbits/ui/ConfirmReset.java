@@ -1,4 +1,7 @@
-package orbits;
+package orbits.ui;
+
+import orbits.model.Planet;
+import orbits.Simulation;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;

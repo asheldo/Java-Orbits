@@ -1,4 +1,7 @@
-package orbits;
+package orbits.model;
+
+import orbits.Simulation;
+import orbits.ui.Board;
 
 /**
  * Created by amunzer on 7/4/16.

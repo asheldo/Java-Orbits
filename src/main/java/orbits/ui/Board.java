@@ -1,8 +1,7 @@
-package orbits;
+package orbits.ui;
 
-import orbits.GUIMenu;
 import orbits.Simulation;
-import orbits.Planet;
+import orbits.model.Planet;
 
 import javax.swing.*;
 import java.awt.*;

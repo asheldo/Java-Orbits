@@ -1,4 +1,4 @@
-package orbits;
+package orbits.ui;
 
 import orbits.Simulation;
 

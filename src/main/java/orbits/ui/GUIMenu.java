@@ -1,4 +1,4 @@
-package orbits;
+package orbits.ui;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -14,6 +14,8 @@ import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
+import orbits.model.Planet;
+import orbits.Simulation;
 
 public class GUIMenu extends JFrame{
 	

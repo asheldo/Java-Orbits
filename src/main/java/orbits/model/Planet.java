@@ -1,4 +1,6 @@
-package orbits;
+package orbits.model;
+
+import orbits.ui.Board;
 
 public class Planet {
 

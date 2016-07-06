@@ -1,4 +1,6 @@
-package orbits;
+package orbits.ui;
+
+import orbits.Simulation;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

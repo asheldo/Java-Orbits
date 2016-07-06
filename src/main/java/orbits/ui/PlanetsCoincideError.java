@@ -1,6 +1,6 @@
-package orbits;
+package orbits.ui;
 
-import orbits.Planet;
+import orbits.model.Planet;
 
 public class PlanetsCoincideError extends Exception {
 

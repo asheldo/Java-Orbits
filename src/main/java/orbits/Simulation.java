@@ -1,5 +1,10 @@
 package orbits;
 
+import orbits.model.Planet;
+import orbits.model.PlanetBuilder;
+import orbits.ui.GUIMenu;
+import orbits.ui.PlanetsCoincideError;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
