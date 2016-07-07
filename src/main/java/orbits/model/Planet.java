@@ -12,7 +12,7 @@ public class Planet {
 
 	// Stores a mass value, required to determine the accelerations of the planet
 
-	private int mass;
+	private double mass;
 
 
 	// Stores x and y components of the velocity vector, which are added to the
@@ -81,10 +81,11 @@ public class Planet {
 	}
 	// Will be needed for determining the forces that this planet acts upon others with.
 
-	public int getMass() {
+	public double getMass() {
 		return this.mass;
 	}
-	public void setMass(int mass) {
+
+	public void setMass(double mass) {
 		this.mass = mass;
 	}
 	
@@ -125,7 +126,8 @@ public class Planet {
 			dx = String.valueOf(this.dx);
 			dy = String.valueOf(this.dy);
 		}
-		return "\tX: " + this.xpos + "\tY: " + this.ypos + "\tMass: " + this.mass + "\tX velocity: " + dx + "\tY velocity: " + dy;
+		return "\tX: " + this.xpos + "\tY: " + this.ypos + "\tMass: " + this.mass + "\tX velocity: " + dx + "\tY velocity: " + dy
+				+ "\n";
 	}
 
 	// Adds velocity values to position

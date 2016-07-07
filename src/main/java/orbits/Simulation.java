@@ -7,9 +7,7 @@ import orbits.model.PlanetBuilder;
 import orbits.ui.GUIMenu;
 import orbits.ui.PlanetsCoincideError;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by asheldon on 7/4/16.
@@ -19,8 +17,11 @@ import java.util.List;
 public class Simulation {
 
     private static Simulation simulation = new Simulation();
-    private Collisions collisions = new Collisions(this);
-    private Gravity gravity = new Gravity(this);
+
+    private Collisions collisions;
+    private Gravity gravity;
+    private OrbitsConfigOptions options;
+    private Comparator<Planet> sized;
 
     public static Simulation getInstance() {
         return simulation;
@@ -34,6 +35,20 @@ public class Simulation {
         this.drawPlanets = new ArrayList<Planet>();
         this.handle = new GUIMenu("Orbits");
         this.planetBuilder = new PlanetBuilder(handle.getBoard());
+        this.collisions = new Collisions(this);
+        this.gravity = new Gravity(this);
+        this.options = new OrbitsConfigOptions(this);
+        this.sized = new Comparator<Planet>() {
+            @Override
+            public int compare(Planet o1, Planet o2) {
+                Double s1 = o1.getMass();
+                return s1.compareTo(o2.getMass());
+            }
+        }
+    }
+
+    public OrbitsConfigOptions getOptions() {
+        return options;
     }
 
     public GUIMenu getHandle() {
@@ -108,5 +123,33 @@ public class Simulation {
 
     public Gravity getGravity() {
         return gravity;
+    }
+
+    /**
+     *
+     * @return same order
+     */
+    public Iterator<Planet> planetIterator() {
+        return drawPlanets.listIterator();
+    }
+
+    /**
+     * TODO Keep one of these instead...
+     * 
+     * @return increasing size order, unmodifiable --
+     */
+    public Iterator<Planet> planetSizeIterator() {
+        LinkedList<Planet> sorted = new LinkedList<Planet>(drawPlanets);
+        Collections.sort(sorted, sized);
+        return Collections.unmodifiableList(sorted).listIterator();
+    }
+
+    @Override
+    public String toString() {
+        return drawPlanets.toString();
+    }
+
+    public void logState(String s) {
+        System.out.println(s + "\n\t -> " + this.toString());
     }
 }

@@ -120,7 +120,7 @@ public class PlanetEditor extends JPanel {
 			try{
 				alp.get(row).setX(Double.parseDouble(String.valueOf(planetsTable.getValueAt(row+1, 1))));
 				alp.get(row).setY(Double.parseDouble(String.valueOf(planetsTable.getValueAt(row+1, 2))));
-				alp.get(row).setMass(Integer.parseInt(String.valueOf(planetsTable.getValueAt(row+1, 3))));
+				alp.get(row).setMass(Double.parseDouble(String.valueOf(planetsTable.getValueAt(row+1, 3))));
 				if ((String.valueOf(planetsTable.getValueAt(row+1, 4))).equalsIgnoreCase("fixed") || String.valueOf(planetsTable.getValueAt(row+1, 5)).equalsIgnoreCase("fixed")) {
 					alp.get(row).setDx(0);
 					alp.get(row).setDy(0);

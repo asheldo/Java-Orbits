@@ -15,6 +15,10 @@ public class Gravity {
     }
 
     public void movePlanets(Board.BoardConstants consts) {
+        // TODO Options:
+        double emptySpaceY = sim.getOptions().getEmptySpaceY();
+        double emptySpaceX = sim.getOptions().getEmptySpaceX();
+
         for (int i = 0; i < sim.getPlanetCount(); ++i) {
             Planet p2 = sim.getDrawPlanet(i);
             double dx = p2.getDx();
@@ -33,31 +37,49 @@ public class Gravity {
                     dy += consts.dt * consts.G * p1.getMass() / (Math.pow(rng2, 1.5)) * (dpy);
                 }
             }
+            boolean flip = false;
             // Top wall bounce
-            if (p2.y() >= 335) {
+            if (p2.y() >= 335 + emptySpaceY) {
                 if (p2.getDy() > 0)
-                    dy = -dy;
+                    if (flip) {
+                        flip(p2);
+                    } else
+                        dy = -dy;
             }
             // Right wall bounce
-            if (p2.x() >= 361) {
+            if (p2.x() >= 361 + emptySpaceX) {
                 if (p2.getDx() > 0)
-                    dx = -dx;
+                    if (flip) {
+                        flip(p2);
+                    } else
+                        dx = -dx;
             }
             // Bottom wall bounce
-            if (p2.y() <= -329) {
+            if (p2.y() <= -329 - emptySpaceY) {
                 if (p2.getDy() < 0)
-                    dy = -dy;
+                    if (flip) {
+                        flip(p2);
+                    } else
+                        dy = -dy;
             }
             // Left wall bounce
-            if (p2.x() <= -364) {
+            if (p2.x() <= -364 - emptySpaceX) {
                 if (p2.getDx() < 0)
-                    dx = -dx;
+                    if (flip) {
+                        flip(p2);
+                    } else
+                        dx = -dx;
             }
             p2.setDx(dx);
             p2.setDy(dy);
         }
 
 
+    }
+
+    protected void flip(Planet p) {
+        p.setX(-p.x());
+        p.setY(-p.y());
     }
 
 }
