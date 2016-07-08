@@ -52,31 +52,25 @@ public class Board extends JPanel{
 		COLORS.add(Color.PINK);
 
 		Simulation sim = Simulation.getInstance();
+
+		// Calcs
+		sim.movePlanets(consts);
+
 		GUIMenu board = sim.getHandle();
 		int selected = board.tabbedPane.getSelectedIndex();
-		Gravity gravity = sim.getGravity();
-		gravity.movePlanets(consts);
-
-		// Moves
 		for (int i = 0; i < sim.getPlanetCount(); i++) {
 			if (selected == 1) {
-				movePlanet(sim, i, g);
+				Planet p1 = sim.getDrawPlanet(i);
+				showMovePlanet(p1, i, g);
 			} else if (selected == 0) {
-				board.dispfield.setText(
-						moveTextPlanet(sim, i));
+				String text = textMovePlanet(sim, i);
+				board.dispfield.setText(text);
 			}
 		}
-
-		// Checks for collisions
-		Collisions collisions = sim.getCollisions();
-		collisions.check(consts);
-
 		controlsUpdate(board, sim);
 	}
 
-	private String moveTextPlanet(Simulation sim, int i) {
-		Planet p1 = sim.getDrawPlanet(i);
-		p1.move(consts.dt);
+	private String textMovePlanet(Simulation sim, int i) {
 		String displaytext = "";
 		for (int k = 0; k < sim.getPlanetCount(); k++) {
 			String temp = "  Index: " + (k + 1) + "\t" + sim.getDrawPlanet(k).toString() + "\n";
@@ -85,9 +79,7 @@ public class Board extends JPanel{
 		return displaytext;
 	}
 
-	private void movePlanet(Simulation sim, int i, Graphics2D g) {
-		Planet p1 = sim.getDrawPlanet(i);
-		p1.move(consts.dt);
+	private void showMovePlanet(Planet p1, int i, Graphics2D g) {
 		if (i < COLORS.size()) {
 			g.setColor(COLORS.get(i));
 		} else {

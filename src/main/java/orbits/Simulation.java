@@ -1,9 +1,12 @@
 package orbits;
 
+import com.google.common.collect.EvictingQueue;
 import orbits.calc.Collisions;
 import orbits.calc.Gravity;
+import orbits.calc.Positions;
 import orbits.model.Planet;
 import orbits.model.PlanetBuilder;
+import orbits.ui.Board;
 import orbits.ui.GUIMenu;
 import orbits.ui.PlanetsCoincideError;
 
@@ -22,6 +25,7 @@ public class Simulation {
     private Gravity gravity;
     private OrbitsConfigOptions options;
     private Comparator<Planet> sized;
+    private EvictingQueue<Object> savedPositionsFifo;
 
     public static Simulation getInstance() {
         return simulation;
@@ -37,6 +41,7 @@ public class Simulation {
         this.planetBuilder = new PlanetBuilder(handle.getBoard());
         this.collisions = new Collisions(this);
         this.gravity = new Gravity(this);
+        this.savedPositionsFifo = EvictingQueue.create(1000);
         this.options = new OrbitsConfigOptions(this);
         this.sized = new Comparator<Planet>() {
             @Override
@@ -144,6 +149,12 @@ public class Simulation {
         return Collections.unmodifiableList(sorted).listIterator();
     }
 
+    public Positions savePositions() {
+        Positions pos = new Positions(drawPlanets);
+        savedPositionsFifo.add(pos);
+        return pos;
+    }
+
     @Override
     public String toString() {
         return drawPlanets.toString();
@@ -151,5 +162,20 @@ public class Simulation {
 
     public void logState(String s) {
         System.out.println(s + "\n\t -> " + this.toString());
+    }
+
+    public void movePlanets(Board.BoardConstants consts) {
+        gravity.movePlanets(consts);
+        // Moves
+        for (Planet p : drawPlanets) {
+            p.move(consts.dt);
+        }
+        // Checks for collisions
+        collisions.check(consts);
+        // Memento
+        Positions pos = savePositions();
+        if (pos.index % 250 == 0) {
+            logState(pos.toString());
+        }
     }
 }
