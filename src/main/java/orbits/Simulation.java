@@ -44,7 +44,7 @@ public class Simulation {
                 Double s1 = o1.getMass();
                 return s1.compareTo(o2.getMass());
             }
-        }
+        };
     }
 
     public OrbitsConfigOptions getOptions() {
@@ -135,7 +135,7 @@ public class Simulation {
 
     /**
      * TODO Keep one of these instead...
-     * 
+     *
      * @return increasing size order, unmodifiable --
      */
     public Iterator<Planet> planetSizeIterator() {
