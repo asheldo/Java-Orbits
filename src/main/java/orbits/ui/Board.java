@@ -22,6 +22,7 @@ public class Board extends JPanel{
 	private static final long serialVersionUID = 1L;
 
 	private final ArrayList<Color> COLORS = new ArrayList<Color>();
+
 	@Override
 	public int getWidth() {
 		return 750;
@@ -52,22 +53,37 @@ public class Board extends JPanel{
 		COLORS.add(Color.PINK);
 
 		Simulation sim = Simulation.getInstance();
-
-		// Calcs
+		// Ensure the simulation has started moving
 		sim.movePlanets(consts);
-
 		GUIMenu board = sim.getHandle();
+
+		double reduceX = sim.getReductionFactorX();
+		double reduceY = sim.getReductionFactorY();
+
 		int selected = board.tabbedPane.getSelectedIndex();
 		for (int i = 0; i < sim.getPlanetCount(); i++) {
 			if (selected == 1) {
 				Planet p1 = sim.getDrawPlanet(i);
-				showMovePlanet(p1, i, g);
+				int x = (int) translateX(p1.x() * reduceX); // ;
+				int y = (int) translateY(p1.y() * reduceY); // getCoords()[1];
+				showMovePlanet(i, g, x, y, p1.getFixed());
 			} else if (selected == 0) {
 				String text = textMovePlanet(sim, i);
 				board.dispfield.setText(text);
 			}
 		}
 		controlsUpdate(board, sim);
+	}
+
+	// Returns the X and Y pixels in the form of an array of length 2
+	public double translateX(double xpos) {
+		double xTranslate = getWidth()/2 + xpos - 5;
+		return xTranslate;
+	}
+
+	public double translateY(double ypos) {
+		double yTranslate = getHeight()/2 - ypos - 5;
+		return yTranslate;
 	}
 
 	private String textMovePlanet(Simulation sim, int i) {
@@ -79,17 +95,21 @@ public class Board extends JPanel{
 		return displaytext;
 	}
 
-	private void showMovePlanet(Planet p1, int i, Graphics2D g) {
+	private void showMovePlanet(int i, Graphics2D g, int x, int y, boolean fixed) {
+
+		int diameter = 5;
+
 		if (i < COLORS.size()) {
 			g.setColor(COLORS.get(i));
 		} else {
 			g.setColor(Color.gray);
 		}
-		g.fillOval((int) p1.getCoords()[0], (int) p1.getCoords()[1], 10, 10);
+
+		g.fillOval(x, y, diameter, diameter);
 		// Graphical indication of a fixed planet
-		if (p1.getFixed()) {
+		if (fixed) {
 			g.setColor(Color.black);
-			g.drawOval((int) p1.getCoords()[0], (int) p1.getCoords()[1], 10, 10);
+			g.drawOval(x, y, diameter, diameter);
 		}
 	}
 

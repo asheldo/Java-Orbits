@@ -16,8 +16,14 @@ public class Gravity {
 
     public void movePlanets(Board.BoardConstants consts) {
         // TODO Options:
-        double emptySpaceY = sim.getOptions().getEmptySpaceY();
-        double emptySpaceX = sim.getOptions().getEmptySpaceX();
+        // double emptySpaceY = sim.getOptions().getEmptySpaceY();
+        // double emptySpaceX = sim.getOptions().getEmptySpaceX();
+        double halfMaxDimension = sim.getOptions().getHalfMaxDimension();
+        double outerSpace = sim.getOptions().getOuterSpace();
+        double maxY = halfMaxDimension; // 335 + emptySpaceY;
+        double minY = -halfMaxDimension; // 335 + emptySpaceY;
+        double maxX = halfMaxDimension; // 335 + emptySpaceY;
+        double minX = -halfMaxDimension; // -364 - emptySpaceY;
 
         for (int i = 0; i < sim.getPlanetCount(); ++i) {
             Planet p2 = sim.getDrawPlanet(i);
@@ -39,42 +45,47 @@ public class Gravity {
             }
             boolean flip = false;
             // Top wall bounce
-            if (p2.y() >= 335 + emptySpaceY) {
+            if (p2.y() >= maxX + outerSpace) {
                 if (p2.getDy() > 0)
                     if (flip) {
                         flip(p2);
                     } else
-                        dy = -dy;
+                        dy = -dy * reentryCost(dy);
             }
             // Right wall bounce
-            if (p2.x() >= 361 + emptySpaceX) {
+            if (p2.x() >= maxX + outerSpace) {
                 if (p2.getDx() > 0)
                     if (flip) {
                         flip(p2);
                     } else
-                        dx = -dx;
+                        dx = -dx * reentryCost(dx);
             }
             // Bottom wall bounce
-            if (p2.y() <= -329 - emptySpaceY) {
+            if (p2.y() <= minY - outerSpace) {
                 if (p2.getDy() < 0)
                     if (flip) {
                         flip(p2);
                     } else
-                        dy = -dy;
+                        dy = -dy * reentryCost(dy);
             }
             // Left wall bounce
-            if (p2.x() <= -364 - emptySpaceX) {
+            if (p2.x() <= minX - outerSpace) {
                 if (p2.getDx() < 0)
                     if (flip) {
                         flip(p2);
                     } else
-                        dx = -dx;
+                        dx = -dx * reentryCost(dx);
             }
             p2.setDx(dx);
             p2.setDy(dy);
         }
 
 
+    }
+
+    private double reentryCost(double dx) {
+        double sqrt = Math.sqrt(Math.abs(dx)) / Math.abs(dx);
+        return sqrt;
     }
 
     protected void flip(Planet p) {

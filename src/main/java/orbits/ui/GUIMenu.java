@@ -16,11 +16,9 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
 import orbits.model.Planet;
 import orbits.Simulation;
-import orbits.model.PlanetBuilder;
 
 public class GUIMenu extends JFrame{
-	
-	
+
 	private static final long serialVersionUID = 1L;
 
 	private boolean presetFirstrun = true;
@@ -202,10 +200,10 @@ public class GUIMenu extends JFrame{
 		});
 		PresetOrbitChooser.add(QuadOrbit);
 
-		addMoreCircular(30);
+		layoutMoreCircularOrbits(50);
 	}
 
-	protected void addMoreCircular(int dupes) {
+	protected void layoutMoreCircularOrbits(int dupes) {
 		for (int more = 0; more < dupes; ++more) {
 			JButton CircularOrbit = new JButton("");
 			final int n = more;
@@ -226,6 +224,7 @@ public class GUIMenu extends JFrame{
 
 	protected void recallConfig() {
 		Simulation sim = Simulation.getInstance();
+
 		if (restartindex == 0){
 			String d = "";
 			for(int i = 0; i < restartPlArrList.size(); i++) {
@@ -240,8 +239,12 @@ public class GUIMenu extends JFrame{
 		}
 		else if (restartindex == 1) {
 			sim.restart();
+
 			sim.buildPlanet(0, 0, 5000, 0, 0, true);
-			sim.buildPlanet(100, 0, 0, 0, 22, false);
+			sim.buildPlanet(100, 0, 0, 0,
+					// factorX *
+					22, false);
+
 			if(!presetFirstrun) {
 				sim.setRunning(false);
 				tabbedPane.setSelectedIndex(3);
@@ -253,10 +256,15 @@ public class GUIMenu extends JFrame{
 		}
 		else if (restartindex >= 100) {
 			sim.restart();
-			sim.buildPlanet(0, 0, 5000, 0, 0, true);
+			sim.buildPlanet(0, 0, 25000, 0, 0, true);
 			for (int more = 0; more <= restartindex - 100; ++more) {
-				sim.buildPlanet(100 + 25 * more, more, more, 0,
-						22. + 0.3 * Math.pow(more, 1.2), false);
+				sim.buildPlanet(
+						(50 + 1 * more),
+						1 * more, // y
+						1 * more, // mass
+						0, // dx
+						// dy
+						4 + 0.1 * more, false);
 			}
 			if (!presetFirstrun) {
 				sim.setRunning(false);
@@ -269,9 +277,11 @@ public class GUIMenu extends JFrame{
 		}
 		else if (restartindex == 2) {
 			sim.restart();
+
 			sim.buildPlanet(-20, 0, 2500, 0, 0, true);
 			sim.buildPlanet(20, 0, 2500, 0, 0, true);
 			sim.buildPlanet(0, 0, 0, 0, 66, false);
+
 			if(!presetFirstrun) {
 				sim.setRunning(false);
 				tabbedPane.setSelectedIndex(3);
@@ -282,10 +292,12 @@ public class GUIMenu extends JFrame{
 			}
 		} else if (restartindex == 3) {
 			sim.restart();
+
 			sim.buildPlanet(200, 0, 10000, 0, 10, false);
 			sim.buildPlanet(-200, 0, 10000, 0, -10, false);
 			sim.buildPlanet(0, 200, 10000, -10, 0, false);
 			sim.buildPlanet(0, -200, 10000, 10, 0, false);
+
 			if(!presetFirstrun) {
 				sim.setRunning(false);
 				tabbedPane.setSelectedIndex(3);
@@ -338,7 +350,7 @@ public class GUIMenu extends JFrame{
 				tryFixed = true;
 			}
 
-			errorIndex = new PlanetBuilder().notEmpty(planets, tryX, tryY);
+			errorIndex = sim.notEmpty(planets, tryX, tryY);
 			if (errorIndex == -1) {
 				empty = true;
 			}
@@ -374,7 +386,6 @@ public class GUIMenu extends JFrame{
 			sim.getHandle().tabbedPane.setSelectedIndex(3);
 		}
 	}
-
 
 	public Board getBoard() {
 		return board;

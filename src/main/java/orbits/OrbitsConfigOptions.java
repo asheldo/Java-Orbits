@@ -1,7 +1,6 @@
 package orbits;
 
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Created by amunzer on 7/6/16.
@@ -12,37 +11,31 @@ public class OrbitsConfigOptions {
      * IF minorMass/majorMass ratio < ratio THEN collision is merge not bounce!
      */
     private double mergeThresholdMassRatioMax;
-    private double emptySpaceY;
-    private double emptySpaceX;
-
-    private boolean moveThreaded;
 
     public Level logLevel = Level.INFO; // WARNING;
-    public int logEach = 250;
-    public long sleep = 10L; // ms
+    public int logEach = 0;
+    private long sleep = 5L; // ms
+    private double halfMaxDimension = 5000;
+    private double outerSpace = 5000;
 
     public OrbitsConfigOptions(Simulation simulation) {
         // v. transfer mass
         this.mergeThresholdMassRatioMax = 0.1; // 0. old
-        this.emptySpaceX = 100;
-        this.emptySpaceY = 100;
-        // this.flip
-        this.moveThreaded = true;
     }
 
     public double getMergeThresholdMassRatioMax() {
         return mergeThresholdMassRatioMax;
     }
 
-    public double getEmptySpaceY() {
-        return emptySpaceY;
+    public double getHalfMaxDimension() {
+        return halfMaxDimension;
     }
 
-    public double getEmptySpaceX() {
-        return emptySpaceX;
+    public long getSleep() {
+        return sleep;
     }
 
-    public boolean isMoveThreaded() {
-        return moveThreaded;
+    public double getOuterSpace() {
+        return outerSpace;
     }
 }

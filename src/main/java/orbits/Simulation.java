@@ -6,7 +6,6 @@ import orbits.calc.Collisions;
 import orbits.calc.Gravity;
 import orbits.calc.Positions;
 import orbits.model.Planet;
-import orbits.model.PlanetBuilder;
 import orbits.ui.Board;
 import orbits.ui.GUIMenu;
 import orbits.ui.PlanetsCoincideError;
@@ -26,15 +25,17 @@ import java.util.logging.Level;
 public class Simulation {
 
     private static Simulation simulation = new Simulation();
-
     private Collisions collisions;
     private Gravity gravity;
+    private Mover mover;
+    private MoveExecutor executor;
+
     private OrbitsConfigOptions options;
+    private final OrbitsUIOptions optionsUI;
+
     private Comparator<Planet> sized;
     private EvictingQueue<Object> savedPositionsFifo;
     private boolean isRunning;
-    private Mover mover;
-    private MoveExecutor executor;
 
     public static Simulation getInstance() {
         return simulation;
@@ -42,16 +43,15 @@ public class Simulation {
 
     private List<Planet> drawPlanets;
     private final GUIMenu handle;
-    private final PlanetBuilder planetBuilder;
 
     private Simulation() {
-        this.drawPlanets = new ArrayList<Planet>();
         this.handle = new GUIMenu("Orbits");
-        this.planetBuilder = new PlanetBuilder(handle.getBoard());
+        this.drawPlanets = new ArrayList<Planet>();
         this.collisions = new Collisions(this);
         this.gravity = new Gravity(this);
         this.savedPositionsFifo = EvictingQueue.create(1000);
         this.options = new OrbitsConfigOptions(this);
+        this.optionsUI = new OrbitsUIOptions(this);
         this.executor = new MoveExecutor();
 
         this.sized = new Comparator<Planet>() {
@@ -90,17 +90,47 @@ public class Simulation {
         return drawPlanets.get(i);
     }
 
-    public PlanetBuilder getPlanetBuilder() {
-        return planetBuilder;
-    }
-
     /**
      * And add
      */
     public void buildPlanet(double tryX, double tryY, int tryMass, double tryDX, double tryDY, boolean tryFixed) {
+        double factorX = 1./getReductionFactorX();
+        double factorY = 1./getReductionFactorY();
         // builder sets board too
-        Planet planet = planetBuilder.build(tryX, tryY, tryMass, tryDX, tryDY, tryFixed);
+        Planet planet = new Planet(
+                tryX * factorX,
+                tryY * factorY,
+                (int) (tryMass * factorX),
+                tryDX * Math.pow(factorX, 0.5),
+                tryDY * Math.pow(factorY, 0.5),
+                tryFixed);
         addPlanet(planet);
+    }
+
+    public double getReductionFactorX() {
+        Board board = getHandle().getBoard();
+        double fact = board.getWidth() / (getOptions().getHalfMaxDimension() * 2);
+        return fact;
+    }
+
+    public double getReductionFactorY() {
+        Board board = getHandle().getBoard();
+        double fact = board.getHeight() / (getOptions().getHalfMaxDimension() * 2);
+        return fact;
+    }
+
+    public int notEmpty(Collection<Planet> planets, double tryX, double tryY) {
+        int i = 0;
+        int errorIndex = -1;
+        for (Planet p: planets) {
+            if ((Math.sqrt(Math.pow(p.x() - tryX, 2) + Math.pow(p.y() - tryY, 2))
+                    < 10)) {
+                tryX += 11;
+                errorIndex = i;
+            }
+            ++i;
+        }
+        return errorIndex;
     }
 
     public void validate(String xposText, String yposText) throws PlanetsCoincideError {
@@ -178,7 +208,7 @@ public class Simulation {
     }
 
     public void movePlanets(Board.BoardConstants consts) {
-        if (!options.isMoveThreaded()) {
+        if (!optionsUI.isMoveThreaded()) {
             movePlanetsOnce(consts);
         } else {
             startMover(consts);
@@ -239,9 +269,9 @@ public class Simulation {
         public void run() {
             while (sim.isRunning()) {
                 sim.movePlanetsOnce(consts);
-                if (sim.options.sleep > 0)
+                if (sim.options.getSleep() > 0)
                     try {
-                        Thread.sleep(sim.options.sleep);
+                        Thread.sleep(sim.options.getSleep());
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -260,7 +290,7 @@ public class Simulation {
         collisions.check(consts);
         // Memento
         Positions pos = savePositions();
-        if (pos.index % options.logEach == 0) {
+        if (options.logEach > 0 && pos.index % options.logEach == 0) {
             logState(pos.toString());
         }
     }

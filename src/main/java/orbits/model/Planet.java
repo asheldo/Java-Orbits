@@ -1,7 +1,5 @@
 package orbits.model;
 
-import orbits.ui.Board;
-
 public class Planet {
 
 	// Store X and Y coordinates of the planet in 2D space
@@ -22,11 +20,11 @@ public class Planet {
 	private double dy;
 	private boolean fixed;
 
-	private Board board;
+	// private Board board;
 
 	// Initializes a planet with a given x and y coordinate, mass, and x and y velocity components
 
-	protected Planet(double xpos, double ypos, int mass, double dx, double dy, boolean fixed) {
+	public Planet(double xpos, double ypos, int mass, double dx, double dy, boolean fixed) {
 
 		this.xpos = xpos;
 		this.ypos = ypos;
@@ -44,25 +42,24 @@ public class Planet {
 		this.dy = p.getDy();
 
 		this.fixed = p.getFixed();
-		this.setBoard(p.getBoard());
+		// this.setBoard(p.getBoard());
 	}
 
-	// Returns the X and Y pixels in the form of an array of length 2
-
+/*
 	public double[] getCoords() {
-		return  new double[] {(getBoard().getWidth()/2) + xpos - 5, getBoard().getHeight()/2 - ypos - 5};
+		double xTranslate = getBoard().getWidth()/2 + xpos - 5;
+		double yTranslate = getBoard().getHeight()/2 - ypos - 5;
+		return  new double[] {xTranslate, yTranslate};
 	}
+*/
 
-	private Board getBoard() {
-		return board;
-	}
-
-	// Sets planet's coordinates
+/*
 	public void setCoords(double x, double y) {
 		this.xpos = x;
 		this.ypos = y;
 	}
-	
+*/
+
 	// These return raw x and y coordinates, they are short because it's short and readable
 	// for when I'm doing the math.
 	public double x() {
@@ -131,14 +128,11 @@ public class Planet {
 	}
 
 	// Adds velocity values to position
-	public void move(double boardDT) {
+	public void move(double dt) {
 		if(!this.fixed){
-			this.xpos += boardDT * this.dx;
-			this.ypos += boardDT * this.dy;
+			this.xpos += dt * this.dx;
+			this.ypos += dt * this.dy;
 		}
 	}
 
-	public void setBoard(Board board) {
-		this.board = board;
-	}
 }
