@@ -23,8 +23,6 @@ public class GUIMenu extends JFrame{
 	
 	private static final long serialVersionUID = 1L;
 
-	public boolean isRunning; //false
-	
 	private boolean presetFirstrun = true;
 	
 	public WarningBox warning;
@@ -203,6 +201,27 @@ public class GUIMenu extends JFrame{
 			}
 		});
 		PresetOrbitChooser.add(QuadOrbit);
+
+		addMoreCircular(30);
+	}
+
+	protected void addMoreCircular(int dupes) {
+		for (int more = 0; more < dupes; ++more) {
+			JButton CircularOrbit = new JButton("");
+			final int n = more;
+			CircularOrbit.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					restartindex = 100 + n;
+					recallConfig();
+					}
+			});
+			CircularOrbit.setIcon(new ImageIcon(GUIMenu.class.getResource("/CircularOrbit.png")));
+			CircularOrbit.setBounds(
+					70 + 60 * (more / 5),
+					11 + 60 * (more % 5),
+					51, 51);
+			PresetOrbitChooser.add(CircularOrbit);
+		}
 	}
 
 	protected void recallConfig() {
@@ -215,7 +234,7 @@ public class GUIMenu extends JFrame{
 				d += temp;
 			}
 			changeDisplayText(d);
-			isRunning = false;
+			sim.setRunning(false);
 			tabbedPane.setSelectedIndex(3);
 			tabbedPane.setEnabled(true);
 		}
@@ -224,23 +243,40 @@ public class GUIMenu extends JFrame{
 			sim.buildPlanet(0, 0, 5000, 0, 0, true);
 			sim.buildPlanet(100, 0, 0, 0, 22, false);
 			if(!presetFirstrun) {
-				isRunning = false;
+				sim.setRunning(false);
 				tabbedPane.setSelectedIndex(3);
 			} else {
-				isRunning = true;
+				sim.setRunning(true);
 				tabbedPane.setSelectedIndex(1);
 				presetFirstrun = false;
 			}
-		} else if (restartindex == 2) {
+		}
+		else if (restartindex >= 100) {
+			sim.restart();
+			sim.buildPlanet(0, 0, 5000, 0, 0, true);
+			for (int more = 0; more <= restartindex - 100; ++more) {
+				sim.buildPlanet(100 + 25 * more, more, more, 0,
+						22. + 0.3 * Math.pow(more, 1.2), false);
+			}
+			if (!presetFirstrun) {
+				sim.setRunning(false);
+				tabbedPane.setSelectedIndex(3);
+			} else {
+				sim.setRunning(true);
+				tabbedPane.setSelectedIndex(1);
+				presetFirstrun = false;
+			}
+		}
+		else if (restartindex == 2) {
 			sim.restart();
 			sim.buildPlanet(-20, 0, 2500, 0, 0, true);
 			sim.buildPlanet(20, 0, 2500, 0, 0, true);
 			sim.buildPlanet(0, 0, 0, 0, 66, false);
 			if(!presetFirstrun) {
-				isRunning = false;
+				sim.setRunning(false);
 				tabbedPane.setSelectedIndex(3);
 			} else {
-				isRunning = true;
+				sim.setRunning(true);
 				tabbedPane.setSelectedIndex(1);
 				presetFirstrun = false;
 			}
@@ -251,10 +287,10 @@ public class GUIMenu extends JFrame{
 			sim.buildPlanet(0, 200, 10000, -10, 0, false);
 			sim.buildPlanet(0, -200, 10000, 10, 0, false);
 			if(!presetFirstrun) {
-				isRunning = false;
+				sim.setRunning(false);
 				tabbedPane.setSelectedIndex(3);
 			} else {
-				isRunning = true;
+				sim.setRunning(true);
 				tabbedPane.setSelectedIndex(1);
 				presetFirstrun = false;
 			}
@@ -343,4 +379,5 @@ public class GUIMenu extends JFrame{
 	public Board getBoard() {
 		return board;
 	}
+
 }

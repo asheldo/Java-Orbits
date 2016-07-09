@@ -94,7 +94,7 @@ public class Board extends JPanel{
 	}
 
 	protected void controlsUpdate(GUIMenu board, Simulation sim) {
-		if(board.isRunning){
+		if(sim.isRunning()) {
 			board.makeplanet.setEnabled(false);
 			board.xpos.setEnabled(false);
 			board.ypos.setEnabled(false);

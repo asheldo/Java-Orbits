@@ -1,6 +1,7 @@
 package orbits;
 
 import com.google.common.collect.EvictingQueue;
+import com.sun.media.jfxmedia.logging.Logger;
 import orbits.calc.Collisions;
 import orbits.calc.Gravity;
 import orbits.calc.Positions;
@@ -11,6 +12,11 @@ import orbits.ui.GUIMenu;
 import orbits.ui.PlanetsCoincideError;
 
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 /**
  * Created by asheldon on 7/4/16.
@@ -26,6 +32,9 @@ public class Simulation {
     private OrbitsConfigOptions options;
     private Comparator<Planet> sized;
     private EvictingQueue<Object> savedPositionsFifo;
+    private boolean isRunning;
+    private Mover mover;
+    private MoveExecutor executor;
 
     public static Simulation getInstance() {
         return simulation;
@@ -43,6 +52,8 @@ public class Simulation {
         this.gravity = new Gravity(this);
         this.savedPositionsFifo = EvictingQueue.create(1000);
         this.options = new OrbitsConfigOptions(this);
+        this.executor = new MoveExecutor();
+
         this.sized = new Comparator<Planet>() {
             @Override
             public int compare(Planet o1, Planet o2) {
@@ -161,10 +172,85 @@ public class Simulation {
     }
 
     public void logState(String s) {
-        System.out.println(s + "\n\t -> " + this.toString());
+        if (options.logLevel == Level.INFO) {
+            System.out.println(s + "\n\t -> " + this.toString());
+        }
     }
 
     public void movePlanets(Board.BoardConstants consts) {
+        if (!options.isMoveThreaded()) {
+            movePlanetsOnce(consts);
+        } else {
+            startMover(consts);
+        }
+    }
+
+    protected void startMover(Board.BoardConstants consts) {
+        if (mover == null) {
+            mover = new Mover(this, consts);
+            mover.resume();
+        }
+    }
+
+    protected void stopMover() {
+        if (mover != null) {
+            mover.pause();
+        }
+        mover = null;
+    }
+
+    /**
+     *
+     */
+    public static class MoveExecutor {
+        int poolSize = 2, max = 2, keepAlive = 60000;
+        BlockingQueue blockingQ = new PriorityBlockingQueue();
+
+        ThreadPoolExecutor executor;
+
+        public void execute(Runnable mover) {
+            executor = new ThreadPoolExecutor(
+                    poolSize, max, keepAlive, TimeUnit.MILLISECONDS, blockingQ);
+            executor.execute(mover);
+        }
+        public void kill() {
+            executor.shutdown();
+        }
+    }
+
+    /**
+     *
+     */
+    public static class Mover implements Runnable {
+        private final Board.BoardConstants consts;
+        private final Simulation sim;
+
+        public Mover(Simulation sim, Board.BoardConstants consts) {
+            this.consts = consts;
+            this.sim = sim;
+        }
+        public void pause() {
+            sim.executor.kill();
+        }
+        public void resume() {
+            sim.executor.execute(this);
+        }
+        @Override
+        public void run() {
+            while (sim.isRunning()) {
+                sim.movePlanetsOnce(consts);
+                if (sim.options.sleep > 0)
+                    try {
+                        Thread.sleep(sim.options.sleep);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+            }
+            sim.logState("Pausing run");
+        }
+    }
+
+    protected void movePlanetsOnce(Board.BoardConstants consts) {
         gravity.movePlanets(consts);
         // Moves
         for (Planet p : drawPlanets) {
@@ -174,8 +260,17 @@ public class Simulation {
         collisions.check(consts);
         // Memento
         Positions pos = savePositions();
-        if (pos.index % 250 == 0) {
+        if (pos.index % options.logEach == 0) {
             logState(pos.toString());
         }
+    }
+
+    public boolean isRunning() {
+        return isRunning;
+    }
+
+    public void setRunning(boolean running) {
+        isRunning = running;
+        stopMover();
     }
 }

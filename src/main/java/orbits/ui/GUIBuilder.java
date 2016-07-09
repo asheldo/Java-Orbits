@@ -293,15 +293,11 @@ public class GUIBuilder {
         btnSimulate.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent h) {
-
-                        if (window.isRunning == false) {
-                            window.isRunning = true;
-
-                        } else {
-                            window.isRunning = false;
-                        }
+                        Simulation sim = Simulation.getInstance();
+                        sim.setRunning(!sim.isRunning());
                         window.tabbedPane.setSelectedIndex(1);
-                        Simulation.getInstance().getHandle().repaint();
+                        // draw
+                        sim.getHandle().repaint();
                     }
                 }
         );
