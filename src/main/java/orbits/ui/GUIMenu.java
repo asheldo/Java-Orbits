@@ -206,20 +206,21 @@ public class GUIMenu extends JFrame{
 
 	protected void layoutMoreCircularOrbits(int dupes) {
 		for (int more = 0; more < dupes; ++more) {
-			JButton CircularOrbit = new JButton("");
-			final int n = more;
-			CircularOrbit.addActionListener(new ActionListener() {
+			JButton circularOrbit = new JButton("");
+			final int additionalPlanets = more + 1;
+			circularOrbit.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					restartindex = 100 + n;
+					restartindex = 100 + additionalPlanets;
 					recallConfig();
 					}
 			});
-			CircularOrbit.setIcon(new ImageIcon(GUIMenu.class.getResource("/CircularOrbit.png")));
-			CircularOrbit.setBounds(
+			int n = 5 * (1 + more / 5);
+			circularOrbit.setIcon(new ImageIcon(GUIMenu.class.getResource("/CircularOrbit" + n + ".png")));
+			circularOrbit.setBounds(
 					70 + 60 * (more / 5),
 					11 + 60 * (more % 5),
 					51, 51);
-			PresetOrbitChooser.add(CircularOrbit);
+			PresetOrbitChooser.add(circularOrbit);
 		}
 	}
 
@@ -262,20 +263,20 @@ public class GUIMenu extends JFrame{
 			sim.restart();
 			Planet center = sim.buildPlanet(0, 0, 200000, 0, 0, true);
 			double dim = sim.getOptions().getHalfMaxDimension();
-			int numberBodies = restartindex - 100;
-			double count = Math.pow((double) numberBodies, 0.75);
+			int additionalPlanets = restartindex - 100;
+			double count = Math.pow((double) additionalPlanets, 0.75);
 			// Top button in column of 5 generates many more small bodies
-			if (numberBodies % 5 == 0) {
-				for (int more = 0; more <= numberBodies; ++more) {
+			if (additionalPlanets % 5 == 1) {
+				for (int more = 0; more <= additionalPlanets; ++more) {
 					Planet p1 = sim.buildPlanet(
 							// (50 + 10 * more),
 							center.getRadius() * 2.5
-									+ (0.25 * dim * Math.pow((double) (more) / (double) (numberBodies), .33)),
+									+ (0.25 * dim * Math.pow((double) (more) / (double) (additionalPlanets), .33)),
 							0 * more, // y
-							1 + 4 * numberBodies, // mass
+							1 + 4 * additionalPlanets, // mass
 							0, // dx
 							// dy
-							center.getRadius() + (4 * Math.sqrt((double) (more) / (double) (numberBodies))),
+							center.getRadius() + (4 * Math.sqrt((double) (more) / (double) (additionalPlanets))),
 							// 4 + 0.5 more,
 							false);
 					for (int distributed = 0; distributed < count; ++distributed) {
@@ -287,7 +288,7 @@ public class GUIMenu extends JFrame{
 				}
 				// Bottom 4 buttons in column of 5 each generates 1 more, increasing-size body
 			} else {
-				for (int more = 0; more <= numberBodies; ++more) {
+				for (int more = 0; more <= additionalPlanets; ++more) {
 					sim.buildPlanet(
 							(50 + 3 * more),
 							0 * more, // y
