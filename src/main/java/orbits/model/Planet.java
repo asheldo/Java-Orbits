@@ -1,6 +1,9 @@
 package orbits.model;
 
+import orbits.Simulation;
+
 import java.util.Random;
+import java.util.logging.Level;
 
 public class Planet {
 
@@ -25,6 +28,7 @@ public class Planet {
 	private double dy;
 	private boolean fixed;
 	private int absorbed;
+	private double radius;
 
 	// private Board board;
 
@@ -33,7 +37,7 @@ public class Planet {
 	public Planet(double xpos, double ypos, int mass, double dx, double dy, boolean fixed) {
 		this.xpos = xpos;
 		this.ypos = ypos;
-		this.mass = mass;
+		setMass(mass);
 		this.dx = dx;
 		this.dy = dy;
 		this.fixed = fixed;
@@ -43,6 +47,7 @@ public class Planet {
 		this.xpos = p.x();
 		this.ypos = p.y();
 		this.mass = p.getMass();
+		this.radius = p.getRadius();
 		this.dx = p.getDx();
 		this.dy = p.getDy();
 
@@ -93,8 +98,38 @@ public class Planet {
 		return mass;
 	}
 
+	/**
+	 * If the distance is closer than the 2 planet radii (one diameter)
+	 * double thresholdCollisionDistance = ...;
+	 *
+	 * So, 4 * Pi * (radius of the sphere * radius of the sphere * radius of the sphere) / 3
+	 *
+	 * @param mass - zero will be translated to .0000001 arbitrarily small non-zero (negatives preserved)
+     */
 	public void setMass(double mass) {
-		this.mass = mass > 0 ? mass : .00001;
+		if (this.mass < 0) {
+			this.radius = 0;
+		}
+		else if (this.mass == 0 || (mass > 0)) {
+			this.radius = estimateRadius(mass, getDensity(mass));
+		}
+		this.mass = mass == 0 ? .0000001 : mass;
+	}
+
+	private static final double fourThirdsPI = 4. * Math.PI / 3.;
+
+	public static double estimateRadius(double mass, double density) {
+		double vol = mass / density;
+		double radiusEst = Math.pow(vol * fourThirdsPI, 0.33);
+		return radiusEst;
+	}
+
+	/**
+	 *
+	 * @return Sun is .255 as dense as terrestrial planet
+     */
+	public static double getDensity(double mass) {
+		return mass > 10000 ? .255 : 1;
 	}
 	
 	public boolean getFixed() {
@@ -141,6 +176,7 @@ public class Planet {
 		return "\tX=" + String.format("%1.2f", this.xpos) +
 				"\tY=" + String.format("%1.2f", this.ypos) +
 				"\tM=" + String.format("%1.2f", this.mass) +
+				"\testR=" + String.format("%1.2f", this.radius) +
 				"\tDX=" + dx +
 				"\tDY=" + dy +
 				"\t++=" + absorbed
@@ -164,40 +200,71 @@ public class Planet {
 	 * Distribute around circle.
 	 * Also change motion to circular in same, cc direction
 	 */
-	public void randomizeOnCircle() {
-		double randAngle = 90. * random.nextDouble();
-		int randQuadrant = random.nextInt(4);
+	public void randomizeOnCircle(double dt) {
+		double rand = random.nextDouble();
+
+		move(dt * rand); // randomize off line
+
+		// now distribute around circle
+		double randAngle = 90. * rand;
 		double sin = Math.sin(randAngle);
 		double cos = Math.cos(randAngle);
 		double d = Math.sqrt(Math.pow(xpos, 2) + Math.pow(ypos, 2));
 		double vec = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+		double xa = sin;
+		double ya = cos;
+
+		int randQuadrant = random.nextInt(4);
 		if (randQuadrant == 0) {
-			xpos = d * sin;
-			ypos = d * cos;
-			dx = -vec * sin;
-			dy = vec * cos;
+			xpos = d * xa;
+			ypos = d * ya;
+			dx = -vec * ya;
+			dy = vec * xa;
 		}
 		else if (randQuadrant == 1) {
-			xpos = d * sin;
-			ypos = -d * cos;
-			dx = vec * sin;
-			dy = vec * cos;
+			xpos = d * xa;
+			ypos = -d * ya;
+			dx = vec * ya;
+			dy = vec * xa;
 		}
 		else if (randQuadrant == 2) {
-			xpos = -d * sin;
-			ypos = -d * cos;
-			dx = vec * sin;
-			dy = -vec * cos;
+			xpos = -d * xa;
+			ypos = -d * ya;
+			dx = vec * ya;
+			dy = -vec * xa;
 		}
 		if (randQuadrant == 3) {
-			xpos = -d * sin;
-			ypos = d * cos;
-			dx = -vec * sin;
-			dy = -vec * cos;
+			xpos = -d * xa;
+			ypos = d * ya;
+			dx = -vec * ya;
+			dy = -vec * xa;
 		}
+		Simulation.getInstance().logState("Rand: " + randQuadrant + " vec=" + vec, Level.INFO);
+		Simulation.getInstance().logState(this.toString(), Level.INFO);
 	}
 
 	public void absorbed(Planet p2) {
 		++absorbed;
+	}
+
+	/**
+	 * @return estimated by mass and type
+     */
+	public double getRadius() {
+		return radius;
+	}
+
+	public int getQuadrant(Planet origin) {
+		double x = xpos - origin.xpos, y = ypos - origin.ypos;;
+		if (x >= 0 && y >= 0) {
+			return 0;
+		}
+		if (x >= 0 && y < 0) {
+			return 1;
+		}
+		if (x < 0 && y < 0) {
+			return 2;
+		}
+		return 3;
 	}
 }

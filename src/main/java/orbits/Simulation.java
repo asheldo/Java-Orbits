@@ -36,8 +36,12 @@ public class Simulation {
     // Sorted large to small
     private Comparator<Planet> sized;
 
+    private long moves = 0;
+
     private EvictingQueue<Positions> savedPositionsFifo;
     private boolean isRunning;
+
+    private Planet fixedCenter = new Planet(0, 0, 0, 0, 0, true);
 
     public static Simulation getInstance() {
         return simulation;
@@ -97,14 +101,14 @@ public class Simulation {
      */
     public Planet buildPlanet(double tryX, double tryY, int tryMass, double tryDX, double tryDY, boolean tryFixed) {
         double factorX = 1./getReductionFactorX();
-        double factorY = 1./getReductionFactorY();
+        // double factorY = 1./getReductionFactorY();
         // builder sets board too
         Planet planet = new Planet(
                 tryX * factorX,
-                tryY * factorY,
-                (int) (tryMass * factorX),
+                tryY * factorX,
+                (int) (tryMass),
                 tryDX * Math.pow(factorX, 0.5),
-                tryDY * Math.pow(factorY, 0.5),
+                tryDY * Math.pow(factorX, 0.5),
                 tryFixed);
         addPlanet(planet);
         return planet;
@@ -204,21 +208,22 @@ public class Simulation {
         return drawPlanets.toString();
     }
 
-    public void logState(String s) {
+    public void logState(Object o) {
         if (options.logLevel == Level.INFO) {
-            System.out.println(s + "\n\t -> " + this.toString());
+            System.out.println(o + "\n\t -> " + this.toString());
         }
     }
 
-    public void logState(String s, Level level) {
+    public void logState(Object o, Level level) {
         if (options.logLevel.intValue() <= level.intValue()) {
-            System.out.println(s + "\n\t -> Positions #" + this.savedPositionsFifo.peek().index);
+            System.out.println(o + "\n\t -> Positions #" +
+                    (this.savedPositionsFifo.isEmpty() ? 0 : this.savedPositionsFifo.peek().index));
         }
     }
 
-    public void logStateForced(String s) {
+    public void logStateForced(Object o) {
         if (options.logLevel != Level.SEVERE) {
-            System.out.println(s + "\n\t -> " + this.toString());
+            System.out.println(o + "\n\t -> " + this.toString());
         }
     }
 
@@ -242,6 +247,14 @@ public class Simulation {
             mover.pause();
         }
         mover = null;
+    }
+
+    public Planet getFixedCenter() {
+        return fixedCenter;
+    }
+
+    public void setFixedCenter(Planet fix) {
+        fixedCenter = fix;
     }
 
     /**
@@ -284,9 +297,10 @@ public class Simulation {
         public void run() {
             while (sim.isRunning()) {
                 sim.movePlanetsOnce(consts);
-                if (sim.options.getSleep() > 0)
+                if (sim.options.getSleep() > 0
+                        || (sim.getPlanetCount() < 50 && sim.moves % 5 == 0))
                     try {
-                        Thread.sleep(sim.options.getSleep());
+                        Thread.sleep(sim.options.getSleep() + 1);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -296,17 +310,20 @@ public class Simulation {
     }
 
     protected void movePlanetsOnce(Board.BoardConstants consts) {
+        ++moves;
         gravity.movePlanets(consts);
         // Moves
-        for (Planet p : drawPlanets) {
-            p.move(consts.dt);
+        // for (Planet p : drawPlanets) { p.move(consts.dt); }
+        Iterator<Planet> iter = simulation.planetIterator();
+        while (iter.hasNext()) {
+           iter.next().move(consts.dt);
         }
         // Checks for collisions
         collisions.check(consts);
         // Memento
         Positions pos = savePositions();
         if (options.logEach > 0 && pos.index % options.logEach == 0) {
-            logState(pos.toString());
+            logState(pos);
         }
     }
 

@@ -4,6 +4,7 @@ import orbits.Simulation;
 import orbits.model.Planet;
 import orbits.ui.Board;
 
+import java.util.Iterator;
 import java.util.logging.Level;
 
 /**
@@ -27,12 +28,16 @@ public class Gravity {
         double maxX = halfMaxDimension; // 335 + emptySpaceY;
         double minX = -halfMaxDimension; // -364 - emptySpaceY;
 
-        for (int i = 0; i < sim.getPlanetCount(); ++i) {
-            Planet p2 = sim.getDrawPlanet(i);
+        int i = 0;
+        Iterator<Planet> iter = sim.planetIterator();
+        while (iter.hasNext()) {
+            Planet p2 = iter.next();
             double dx = p2.getDx();
             double dy = p2.getDy();
-            for (int k = 0; k < sim.getPlanetCount(); k++) {
-                Planet p1 = sim.getDrawPlanet(k);
+            int k = 0;
+            Iterator<Planet> iter2 = sim.planetIterator();
+            while (iter2.hasNext()) {
+                Planet p1 = iter2.next();
                 if (i == k) {
                     dx += 0;
                     dy += 0;
@@ -48,7 +53,9 @@ public class Gravity {
                                 Level.WARNING);
                     }
                 }
+                ++k;
             }
+            ++i;
             boolean flip = false;
             // Top wall bounce
             if (p2.y() >= maxX + outerSpace) {

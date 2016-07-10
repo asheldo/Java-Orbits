@@ -6,6 +6,7 @@ import orbits.ui.Board;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.logging.Level;
 
 /**
  * Created by amunzer on 7/6/16.
@@ -13,82 +14,152 @@ import java.util.Iterator;
 public class Collisions {
     private final Simulation sim;
 
+    private double lostMass;
+
     public Collisions(Simulation simulation) {
         this.sim = simulation;
     }
 
     public void check(Board.BoardConstants consts) {
         final HashSet<Planet> lostPlanets = new HashSet<Planet>();
+        final HashSet<Planet> newPlanets = new HashSet<Planet>();
         final double mergeThresholdMassRatioMax = sim.getOptions().getMergeThresholdMassRatioMax();
-        for (int i = 0; i < sim.getPlanetCount(); i++) {
-            final Planet p1 = sim.getDrawPlanet(i);
+        int i = 0;
+        Iterator<Planet> iter = sim.planetIterator();
+        while (iter.hasNext()) {
+            final Planet p1 = iter.next();
             if (lostPlanets.contains(p1)) {
                 continue;
             }
-            for (int j = 0; j < sim.getPlanetCount(); j++) {
-                final Planet p2 = sim.getDrawPlanet(j);
-                if (lostPlanets.contains(p2)) {
-                    continue;
+            try {
+                int j = 0;
+                Iterator<Planet> iter2 = sim.planetIterator();
+                while (iter2.hasNext()) {
+                    final Planet p2 = iter2.next();
+                    if (lostPlanets.contains(p2)) {
+                        continue;
+                    }
+                    Planet lost = bounceOrMerge(consts, lostPlanets, newPlanets,
+                            mergeThresholdMassRatioMax, i, p1, j, p2);
+                    if (lost != null) {
+                        lostPlanets.add(lost);
+                    }
+                    ++j;
                 }
-                Planet lost = bounceOrMerge(consts, lostPlanets, mergeThresholdMassRatioMax, i, p1, j, p2);
-                if (lost != null) {
-                    lostPlanets.add(lost);
-                }
+            } catch (Exception e) {
+                System.out.println(i + " " + e.getMessage());
             }
+            ++i;
         }
         // Cleanup
+        for (Planet p : newPlanets) {
+            sim.addPlanet(p);
+        }
         if (!lostPlanets.isEmpty()) {
-            Iterator<Planet> iter = sim.planetIterator();
-            while (iter.hasNext()) {
-                if (lostPlanets.contains(iter.next())) {
-                    iter.remove();
+            Iterator<Planet> iter3 = sim.planetIterator();
+            while (iter3.hasNext()) {
+                if (lostPlanets.contains(iter3.next())) {
+                    iter3.remove();
                 }
             }
         }
     }
 
-    private Planet bounceOrMerge(Board.BoardConstants consts, HashSet<Planet> lostPlanets, double mergeThresholdMassRatioMax, int i, Planet p1, int j, Planet p2) {
+    /**
+     *
+     * @param consts
+     * @param lostPlanets
+     * @param mergeThresholdMassRatioMax
+     * @param i
+     * @param p1
+     * @param j
+     * @param p2
+     *
+     * @return lost Planet if a merge-absorption occurs
+     */
+    private Planet bounceOrMerge(Board.BoardConstants consts, HashSet<Planet> lostPlanets, HashSet<Planet> newPlanets,
+                                 double mergeThresholdMassRatioMax, int i, Planet p1, int j, Planet p2) {
+        double xd = Math.abs(p2.x()-p1.x()), yd = Math.abs(p2.y()-p1.y());
+        double m1 = p1.getMass(), m2 = p2.getMass();
+        double r1 = p1.getRadius(), r2 = p2.getRadius();
         // If the distance is closer than the 2 planet radii (one diameter)
-        if(Math.sqrt(Math.pow(p2.x()-p1.x(), 2)
-                + Math.pow(p2.y()-p1.y(), 2)) <= 15
-                && i != j) {
+        double thresholdCollisionDistance = r1 + r2; // 15;
+        if (m1 < 0 || m2 < 0) {
+            // sim.logState("zero collision: " + p1 + "->"+ p2, Level.WARNING); // we don't do zero anymore
+        }
+        else if (i != j
+                // Good enough, don't need hypotenuse accuracy
+                && xd <= thresholdCollisionDistance && yd <= thresholdCollisionDistance
+                // && Math.sqrt(Math.pow(xd, 2) + Math.pow(yd, 2)) <= thresholdCollisionDistance
+                ) {
             double vx1 = p1.getFixed() ? 0 : p1.getDx();
             double vy1 = p1.getFixed() ? 0 : p1.getDy();
             double vx2 = p2.getFixed() ? 0 : p2.getDx();
             double vy2 = p2.getFixed() ? 0 : p2.getDy();
-            double m1 = p1.getMass();
-            double m2 = p2.getMass();
             double vxc = (vx1 * m1 + vx2 * m2)/(m1 + m2);
             double vyc = (vy1 * m1 + vy2 * m2)/(m1 + m2);
 
             // TODO Speed should be a factor too, eventually...
+
             if (merge(m1, m2, mergeThresholdMassRatioMax)) {
-                sim.logState("Merge " + m1 + " and " + m2 + " < " + mergeThresholdMassRatioMax);
-                lostPlanets.add(p2);
-                p1.absorbed(p2);
-                if (p1.getFixed()) {
+                Planet keep = m1 > m2 ? p1 : p2;
+                Planet lost = m1 > m2 ? p2 : p1;
+                // sim.logState("Merge: " + lost + " with " + keep + " < " + mergeThresholdMassRatioMax, Level.INFO);
+
+                lostPlanets.add(lost);
+                // Some mass is lost ... to where?
+                if (keep.getFixed()
+                        && false) {
                     // TODO Heat up instead??
                 } else {
-                    p1.setDx(vxc);
-                    p1.setDy(vyc);
-                    p1.move(consts.dt);
+                    if (keep.getMass()/(m1 + m2) < .9995) {
+                        keep.setFixed(false);
+                        // Some momentum of smaller body is converted to angular momentum instead
+                        // probably, so average before/after...
+                        keep.setDx((vxc + keep.getDx()) / 2.);
+                        keep.setDy((vyc + keep.getDy()) / 2.);
+                        // p1.move(consts.dt/2.); // extra move only valid for half of time interval
+                    }
                 }
-                // p1.setFixed(false);
-                return p2;
+                keep.setMass(m1 + m2);
+                lost.setMass(-1);
+                keep.absorbed(lost);
+                return lost;
             } else {
-                if (mergeThresholdMassRatioMax > 0) {
-                    // too close in size to merge, instead transfer
+                // too close in size to merge, instead transfer
+                double verySmallMass = 25.;
+                // Don't bother with mass transfer part if very small bodies
+                if (mergeThresholdMassRatioMax > 0 && (m1 + m2 > verySmallMass)) {
                     double transfer = massToTransfer(m1, m2, vxc, vyc);
-                    sim.logState("Transfer: " + transfer + " between " + m1 + " and " + m2);
+                    sim.logState("Transfer: " + transfer + " between " + p1 + " to " + p2, Level.INFO);
                     p1.setMass(m1 + transfer);
                     p2.setMass(m2 - transfer);
+
+                    // Sometimes mass is lost create frag
+                    if (sim.getPlanetCount() < 500 && transfer > 0) {
+                        Planet p3 = new Planet(p2);
+                        p1.setMass(m1 + transfer * .75);
+                        p3.setMass(transfer * .25);
+                        p3.move(consts.dt); // extra move only valid for half of time interval
+                        newPlanets.add(p3);
+                    }
+
+                } else {
+                    sim.logState("Collision", // between " + p1 + " to " + p2,
+                             Level.INFO);
                 }
-                p1.setDx((2 * m2 * (vx2 - vxc) + m1 * (vx1 - vxc) - m2 * (vx1 - vxc)) / (m1 + m2) + vxc);
-                p1.setDy((2 * m2 * (vy2 - vyc) + m1 * (vy1 - vyc) - m2 * (vy1 - vyc)) / (m1 + m2) + vyc);
-                p2.setDx((2 * m1 * (vx1 - vxc) + m2 * (vx2 - vxc) - m1 * (vx2 - vxc)) / (m1 + m2) + vxc);
-                p2.setDy((2 * m1 * (vy1 - vyc) + m2 * (vy2 - vyc) - m1 * (vy2 - vyc)) / (m1 + m2) + vyc);
-                p1.move(consts.dt);
-                p2.move(consts.dt);
+                // Some momentum of smaller body is converted to angular momentum instead
+                // probably, so average before/after...
+                p1.setDx((((2 * m2 * (vx2 - vxc) + m1 * (vx1 - vxc) - m2 * (vx1 - vxc)) / (m1 + m2) + vxc)
+                        + p1.getDx())/2.);
+                p1.setDy((((2 * m2 * (vy2 - vyc) + m1 * (vy1 - vyc) - m2 * (vy1 - vyc)) / (m1 + m2) + vyc)
+                        + p1.getDy())/2.);
+                p2.setDx((((2 * m1 * (vx1 - vxc) + m2 * (vx2 - vxc) - m1 * (vx2 - vxc)) / (m1 + m2) + vxc)
+                        + p2.getDx())/2.);
+                p2.setDy((((2 * m1 * (vy1 - vyc) + m2 * (vy2 - vyc) - m1 * (vy2 - vyc)) / (m1 + m2) + vyc)
+                        + p2.getDy())/2.);
+                // p1.move(consts.dt/2.); // extra move only valid for half of time interval
+                // p2.move(consts.dt/2.); // extra move only valid for half of time interval
             }
         }
         return null;

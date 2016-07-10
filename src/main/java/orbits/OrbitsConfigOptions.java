@@ -15,10 +15,13 @@ public class OrbitsConfigOptions {
     // public Level logLevel = Level.INFO; // WARNING;
     public Level logLevel = Level.WARNING;
 
-    public int logEach = 10000;
-    private long sleep = 1L; // 5L; // ms
-    private double halfMaxDimension = 5000;
-    private double outerSpace = 5000;
+    public int logEach = 25000;
+
+    private long sleep = 0L; // 5L; // ms
+
+    private double halfMaxDimension = 10000;
+
+    private double outerSpace = 50000;
 
     public OrbitsConfigOptions(Simulation simulation) {
         // v. transfer mass

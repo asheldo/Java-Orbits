@@ -9,6 +9,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Level;
 
 import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
@@ -227,7 +228,8 @@ public class GUIMenu extends JFrame{
 		sim.logStateForced("recallConfig: " + restartindex);
 
 		if (restartindex == 0){
-			String d = "";
+			String d = "Planets=" + sim.getPlanetCount();
+			sim.logState(d, Level.WARNING);
 			for(int i = 0; i < restartPlArrList.size(); i++) {
 				sim.setPlanet(i, new Planet(restartPlArrList.get(i)));
 				String temp = "  Index: " + (i+1) + "\t" + Simulation.getInstance().getDrawPlanet(i).toString() + "\n";
@@ -244,7 +246,8 @@ public class GUIMenu extends JFrame{
 			sim.buildPlanet(0, 0, 5000, 0, 0, true);
 			sim.buildPlanet(100, 0, 0, 0,
 					// factorX *
-					22, false);
+					11, // 22
+					false);
 
 			if(!presetFirstrun) {
 				sim.setRunning(false);
@@ -257,23 +260,28 @@ public class GUIMenu extends JFrame{
 		}
 		else if (restartindex >= 100) {
 			sim.restart();
-			sim.buildPlanet(0, 0, 25000, 0, 0, true);
+			Planet center = sim.buildPlanet(0, 0, 200000, 0, 0, true);
+			double dim = sim.getOptions().getHalfMaxDimension();
 			int numberBodies = restartindex - 100;
 			double count = Math.pow((double) numberBodies, 0.75);
 			// Top button in column of 5 generates many more small bodies
 			if (numberBodies % 5 == 0) {
 				for (int more = 0; more <= numberBodies; ++more) {
 					Planet p1 = sim.buildPlanet(
-							(50 + 10 * more),
+							// (50 + 10 * more),
+							center.getRadius() * 2.5
+									+ (0.25 * dim * Math.pow((double) (more) / (double) (numberBodies), .33)),
 							0 * more, // y
-							5 * more, // mass
+							1 + 4 * numberBodies, // mass
 							0, // dx
 							// dy
-							4 + 0.5 * more, false);
+							center.getRadius() + (4 * Math.sqrt((double) (more) / (double) (numberBodies))),
+							// 4 + 0.5 more,
+							false);
 					for (int distributed = 0; distributed < count; ++distributed) {
 						Planet p2 = new Planet(p1);
-						p2.setMass(p2.getMass() * .1);
-						p2.randomizeOnCircle();
+						p2.setMass(p2.getMass() * .5 * ((double) distributed/(double) count));
+						p2.randomizeOnCircle(getBoard().getConsts().dt);
 						sim.addPlanet(p2);
 					}
 				}
@@ -301,9 +309,9 @@ public class GUIMenu extends JFrame{
 		else if (restartindex == 2) {
 			sim.restart();
 
-			sim.buildPlanet(-20, 0, 2500, 0, 0, true);
-			sim.buildPlanet(20, 0, 2500, 0, 0, true);
-			sim.buildPlanet(0, 0, 0, 0, 66, false);
+			sim.buildPlanet(-20, 0, 250, 0, 0, true);
+			sim.buildPlanet(20, 0, 250, 0, 0, true);
+			sim.buildPlanet(0, 0, 0, 0, 5, false);
 
 			if(!presetFirstrun) {
 				sim.setRunning(false);
@@ -316,10 +324,10 @@ public class GUIMenu extends JFrame{
 		} else if (restartindex == 3) {
 			sim.restart();
 
-			sim.buildPlanet(200, 0, 10000, 0, 10, false);
-			sim.buildPlanet(-200, 0, 10000, 0, -10, false);
-			sim.buildPlanet(0, 200, 10000, -10, 0, false);
-			sim.buildPlanet(0, -200, 10000, 10, 0, false);
+			sim.buildPlanet(200, 0, 1000, 0, 3, false);
+			sim.buildPlanet(-200, 0, 1000, 0, -3, false);
+			sim.buildPlanet(0, 200, 1000, -3, 0, false);
+			sim.buildPlanet(0, -200, 1000, 3, 0, false);
 
 			if(!presetFirstrun) {
 				sim.setRunning(false);
@@ -332,32 +340,67 @@ public class GUIMenu extends JFrame{
 		}
 	}
 
-	public void centerMajorBody() {
+	int centerPlanet = 0;
+
+	public void centerMinorBody() {
 		Simulation sim = Simulation.getInstance();
+		int count = sim.getPlanetCount();
+		if (centerPlanet >= count) {
+			centerOne(centerPlanet = 0);
+		} else {
+			centerOne(centerPlanet += (count > 100 ? 5 : 1));
+		}
+	}
+
+	public void centerMajorBody() {
+		centerOne(centerPlanet = 0);
+	}
+
+	protected void centerOne(int n) {
+		Simulation sim = Simulation.getInstance();
+
 		Iterator<Planet> planets = sim.planetSizeIterator();
 		if (!planets.hasNext()) {
 			warningtext = "\n   No planets to center.";
-			try{warning.dispose();} catch (NullPointerException npe) {}
+			try {
+				warning.dispose();
+			} catch (NullPointerException npe) {
+			}
 			warning = new WarningBox();
 			return;
 		}
+		int i = 0;
+		Planet center = null;
+		while (planets.hasNext() && i++ <= n) {
+			center = planets.next();
+			if (i == 1) {
+				sim.setFixedCenter(center);
+			}
+		}
 
-		Planet center = planets.next();
 		double dcx = center.x(), dcy = center.y();
-		if (!planets.hasNext()) {
+		if (i == 1 && !planets.hasNext()) {
 			warningtext = "\n   Only 1 planet to center.";
 			try{warning.dispose();} catch (NullPointerException npe) {}
 			warning = new WarningBox();
 		} else {
-			sim.logState("Center: " + center.toString());
+			// sim.logState("Center: " + center.toString());
 		}
 
 		center.setX(0);
 		center.setY(0);
+		if (n == 0) {
+			// center.setFixed(true);
+		}
+		else {
+			planets = sim.planetSizeIterator();
+		}
 		while (planets.hasNext()) {
 			Planet p = planets.next();
-			p.setX(p.x() - dcx);
-			p.setY(p.y() - dcy);
+			if (!p.equals(center)) {
+				p.setX(p.x() - dcx);
+				p.setY(p.y() - dcy);
+			}
 		}
 		sim.logState("Centered: " + sim.getDrawPlanets().toString());
 
@@ -381,6 +424,7 @@ public class GUIMenu extends JFrame{
 		}
 
 		Planet center = planets.next();
+		sim.setFixedCenter(center);
 		double dcx = center.x(), dcy = center.y();
 		if (!planets.hasNext()) {
 			warningtext = "\n   No minor bodies to randomize.";
@@ -392,7 +436,7 @@ public class GUIMenu extends JFrame{
 
 		while (planets.hasNext()) {
 			Planet p = planets.next();
-			p.randomizeOnCircle();
+			p.randomizeOnCircle(getBoard().getConsts().dt);
 		}
 		sim.logState("Randomized: " + sim.getDrawPlanets().toString());
 

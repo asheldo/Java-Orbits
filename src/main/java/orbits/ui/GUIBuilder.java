@@ -51,14 +51,15 @@ public class GUIBuilder {
         GridBagLayout gbl_ControlBox = new GridBagLayout();
         gbl_ControlBox.columnWidths = new int[]{135, 5};
         gbl_ControlBox.rowHeights = new int[]{
-                33, 33, 33, 0, 0, 0, 0, 0, 33, 33, 33, 372, 33, 0};
+                33, 33, 33, 33, 0, 0, 0, 0, 0, 33, 33, 33, 306, 33, 0};
         gbl_ControlBox.columnWeights = new double[]{1.0, Double.MIN_VALUE};
         gbl_ControlBox.rowWeights = new double[]{
-                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+                0.0, 0.0, 0.0, 0,0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
         ControlBox.setLayout(gbl_ControlBox);
 
         buildNewPlanetButton(ControlBox);
         buildCenterMajorBodyButton(ControlBox);
+        buildCenterMinorBodyButton(ControlBox);
         buildDistributeMinorButton(ControlBox);
         buildXPositionBox(ControlBox);
         buildYPositionBox(ControlBox);
@@ -93,7 +94,6 @@ public class GUIBuilder {
         });
     }
 
-    // New Planet button
     protected void buildCenterMajorBodyButton(JPanel controlBox) {
         window.centermajor = new JButton("Center Major P");
 
@@ -110,6 +110,26 @@ public class GUIBuilder {
         b.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 window.centerMajorBody();
+            }
+        });
+    }
+
+    protected void buildCenterMinorBodyButton(JPanel controlBox) {
+        window.centermajor = new JButton("Center Minor P");
+
+        JButton b = window.centermajor;
+        b.setFont(new Font("Tahoma", Font.BOLD, 11));
+        b.setBackground(Color.BLACK);
+        b.setForeground(Color.BLUE);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(0, 0, 5, 0);
+        gbc.gridx = 0;
+        gbc.gridy = ++gridY;
+        controlBox.add(b, gbc);
+        b.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                window.centerMinorBody();
             }
         });
     }

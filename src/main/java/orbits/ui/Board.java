@@ -8,13 +8,15 @@ import orbits.model.Planet;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.logging.Level;
 
 public class Board extends JPanel{
 
 	public static class BoardConstants {
 		// gravitational constant
 		public final double G = 9.8; // 10
-		public final double dt = .05;
+		public final double dt = .25;
 	}
 
 	private BoardConstants consts = new BoardConstants();
@@ -59,18 +61,27 @@ public class Board extends JPanel{
 
 		double reduceX = sim.getReductionFactorX();
 		double reduceY = sim.getReductionFactorY();
+		int count = sim.getPlanetCount();
 
 		int selected = board.tabbedPane.getSelectedIndex();
-		for (int i = 0; i < sim.getPlanetCount(); i++) {
-			if (selected == 1) {
-				Planet p1 = sim.getDrawPlanet(i);
-				int x = (int) translateX(p1.x() * reduceX); // ;
-				int y = (int) translateY(p1.y() * reduceY); // getCoords()[1];
-				showMovePlanet(i, g, x, y, p1.getFixed(), p1.getMass());
-			} else if (selected == 0) {
-				String text = textMovePlanet(sim, i);
-				board.dispfield.setText(text);
+		int i = 0;
+		Iterator<Planet> iter = sim.planetIterator();
+		try {
+			while (iter.hasNext()) {
+				if (selected == 1) {
+					Planet p1 = iter.next();
+					int x = (int) translateX(p1.x() * reduceX); // ;
+					int y = (int) translateY(p1.y() * reduceY); // getCoords()[1];
+					showMovePlanet(i, g, x, y, p1.getFixed(), p1.getMass(),
+							p1.getQuadrant(sim.getFixedCenter()));
+				} else if (selected == 0) {
+					String text = textMovePlanet(sim, i);
+					board.dispfield.setText(text);
+				}
+				i++;
 			}
+		} catch (Exception e) {
+			sim.logState(e.getMessage(), Level.WARNING);
 		}
 		controlsUpdate(board, sim);
 	}
@@ -95,7 +106,7 @@ public class Board extends JPanel{
 		return displaytext;
 	}
 
-	private void showMovePlanet(int i, Graphics2D g, int x, int y, boolean fixed, double mass) {
+	private void showMovePlanet(int i, Graphics2D g, int x, int y, boolean fixed, double mass, int quadrant) {
 
 		int diameter = 4;
 		if (mass > 10000) {
@@ -112,13 +123,21 @@ public class Board extends JPanel{
 			g.setColor(Color.gray);
 		}
 
-		g.fillOval(x, y, diameter, diameter);
 		// Graphical indication of a fixed planet
 		if (fixed) {
+			g.fillOval(x, y, diameter, diameter);
 			g.setColor(Color.black);
 			g.drawOval(x, y, diameter, diameter);
 			g.setColor(Color.white);
 			g.drawOval(x, y, diameter + 1, diameter + 1);
+		} else if (quadrant == 0) {
+			g.fillOval(x, y, diameter, diameter);
+		} else if (quadrant == 1) {
+			g.fillRect(x, y, diameter, diameter);
+		} else if (quadrant == 2) {
+			g.drawRect(x, y, diameter, diameter);
+		} else {
+			g.drawOval(x, y, diameter, diameter);
 		}
 	}
 
@@ -164,5 +183,8 @@ public class Board extends JPanel{
 		
 	}
 
+	public BoardConstants getConsts() {
+		return consts;
+	}
 
 }
