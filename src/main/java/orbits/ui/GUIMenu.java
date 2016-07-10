@@ -51,7 +51,7 @@ public class GUIMenu extends JFrame{
 	public JPanel contentPane;
 	public JButton btnResetSimulation = new JButton("Reset");
 	public JButton btnRestartSimulation = new JButton("Restart Simulation");
-	public JButton makeplanet;
+	public JButton makeplanet, centermajor, distributeminor;
 	public JButton btnsimulate;
 
 	public PlanetEditor pEdit;
@@ -224,6 +224,7 @@ public class GUIMenu extends JFrame{
 
 	protected void recallConfig() {
 		Simulation sim = Simulation.getInstance();
+		sim.logStateForced("recallConfig: " + restartindex);
 
 		if (restartindex == 0){
 			String d = "";
@@ -257,14 +258,36 @@ public class GUIMenu extends JFrame{
 		else if (restartindex >= 100) {
 			sim.restart();
 			sim.buildPlanet(0, 0, 25000, 0, 0, true);
-			for (int more = 0; more <= restartindex - 100; ++more) {
-				sim.buildPlanet(
-						(50 + 1 * more),
-						1 * more, // y
-						1 * more, // mass
-						0, // dx
-						// dy
-						4 + 0.1 * more, false);
+			int numberBodies = restartindex - 100;
+			double count = Math.pow((double) numberBodies, 0.75);
+			// Top button in column of 5 generates many more small bodies
+			if (numberBodies % 5 == 0) {
+				for (int more = 0; more <= numberBodies; ++more) {
+					Planet p1 = sim.buildPlanet(
+							(50 + 10 * more),
+							0 * more, // y
+							5 * more, // mass
+							0, // dx
+							// dy
+							4 + 0.5 * more, false);
+					for (int distributed = 0; distributed < count; ++distributed) {
+						Planet p2 = new Planet(p1);
+						p2.setMass(p2.getMass() * .1);
+						p2.randomizeOnCircle();
+						sim.addPlanet(p2);
+					}
+				}
+				// Bottom 4 buttons in column of 5 each generates 1 more, increasing-size body
+			} else {
+				for (int more = 0; more <= numberBodies; ++more) {
+					sim.buildPlanet(
+							(50 + 3 * more),
+							0 * more, // y
+							5 * more, // mass
+							0, // dx
+							// dy
+							4 + 0.2 * more, false);
+				}
 			}
 			if (!presetFirstrun) {
 				sim.setRunning(false);
@@ -306,6 +329,79 @@ public class GUIMenu extends JFrame{
 				tabbedPane.setSelectedIndex(1);
 				presetFirstrun = false;
 			}
+		}
+	}
+
+	public void centerMajorBody() {
+		Simulation sim = Simulation.getInstance();
+		Iterator<Planet> planets = sim.planetSizeIterator();
+		if (!planets.hasNext()) {
+			warningtext = "\n   No planets to center.";
+			try{warning.dispose();} catch (NullPointerException npe) {}
+			warning = new WarningBox();
+			return;
+		}
+
+		Planet center = planets.next();
+		double dcx = center.x(), dcy = center.y();
+		if (!planets.hasNext()) {
+			warningtext = "\n   Only 1 planet to center.";
+			try{warning.dispose();} catch (NullPointerException npe) {}
+			warning = new WarningBox();
+		} else {
+			sim.logState("Center: " + center.toString());
+		}
+
+		center.setX(0);
+		center.setY(0);
+		while (planets.hasNext()) {
+			Planet p = planets.next();
+			p.setX(p.x() - dcx);
+			p.setY(p.y() - dcy);
+		}
+		sim.logState("Centered: " + sim.getDrawPlanets().toString());
+
+		if (sim.getHandle().tabbedPane.getSelectedIndex() == 3) {
+
+			//TODO: mouse listener for tabbedPane at index 1 which is the board
+			pEdit = new PlanetEditor();
+			editorIsUp = true;
+			tabbedPane.setComponentAt(3, pEdit);
+		}
+	}
+
+	public void distributeMinorBodies() {
+		Simulation sim = Simulation.getInstance();
+		Iterator<Planet> planets = sim.planetSizeIterator();
+		if (!planets.hasNext()) {
+			warningtext = "\n   No planets to randomize.";
+			try{warning.dispose();} catch (NullPointerException npe) {}
+			warning = new WarningBox();
+			return;
+		}
+
+		Planet center = planets.next();
+		double dcx = center.x(), dcy = center.y();
+		if (!planets.hasNext()) {
+			warningtext = "\n   No minor bodies to randomize.";
+			try{warning.dispose();} catch (NullPointerException npe) {}
+			warning = new WarningBox();
+		} else {
+			sim.logState("Randomize around: " + center.toString());
+		}
+
+		while (planets.hasNext()) {
+			Planet p = planets.next();
+			p.randomizeOnCircle();
+		}
+		sim.logState("Randomized: " + sim.getDrawPlanets().toString());
+
+		if (sim.getHandle().tabbedPane.getSelectedIndex() == 3) {
+
+			//TODO: mouse listener for tabbedPane at index 1 which is the board
+			pEdit = new PlanetEditor();
+			editorIsUp = true;
+			tabbedPane.setComponentAt(3, pEdit);
 		}
 	}
 

@@ -16,6 +16,8 @@ public class GUIBuilder {
 
     private GUIMenu window;
 
+    private int gridY = 0;
+
     public GUIBuilder(GUIMenu window) {
         this.window = window;
         contentPane = new JPanel();
@@ -48,12 +50,16 @@ public class GUIBuilder {
         splitPane.setLeftComponent(ControlBox);
         GridBagLayout gbl_ControlBox = new GridBagLayout();
         gbl_ControlBox.columnWidths = new int[]{135, 5};
-        gbl_ControlBox.rowHeights = new int[]{33, 0, 0, 0, 0, 0, 33, 33, 33, 405, 33, 0};
+        gbl_ControlBox.rowHeights = new int[]{
+                33, 33, 33, 0, 0, 0, 0, 0, 33, 33, 33, 372, 33, 0};
         gbl_ControlBox.columnWeights = new double[]{1.0, Double.MIN_VALUE};
-        gbl_ControlBox.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+        gbl_ControlBox.rowWeights = new double[]{
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
         ControlBox.setLayout(gbl_ControlBox);
 
         buildNewPlanetButton(ControlBox);
+        buildCenterMajorBodyButton(ControlBox);
+        buildDistributeMinorButton(ControlBox);
         buildXPositionBox(ControlBox);
         buildYPositionBox(ControlBox);
         buildMassBox(ControlBox);
@@ -73,7 +79,7 @@ public class GUIBuilder {
         JButton makeplanet = window.makeplanet;
         makeplanet.setFont(new Font("Tahoma", Font.BOLD, 12));
         makeplanet.setBackground(Color.BLACK);
-        makeplanet.setForeground(Color.CYAN);
+        makeplanet.setForeground(Color.BLUE);
         GridBagConstraints gbc_makeplanet = new GridBagConstraints();
         gbc_makeplanet.fill = GridBagConstraints.BOTH;
         gbc_makeplanet.insets = new Insets(0, 0, 5, 0);
@@ -87,7 +93,49 @@ public class GUIBuilder {
         });
     }
 
-        // X position text box
+    // New Planet button
+    protected void buildCenterMajorBodyButton(JPanel controlBox) {
+        window.centermajor = new JButton("Center Major P");
+
+        JButton b = window.centermajor;
+        b.setFont(new Font("Tahoma", Font.BOLD, 11));
+        b.setBackground(Color.BLACK);
+        b.setForeground(Color.BLUE);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(0, 0, 5, 0);
+        gbc.gridx = 0;
+        gbc.gridy = ++gridY;
+        controlBox.add(b, gbc);
+        b.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                window.centerMajorBody();
+            }
+        });
+    }
+
+    // New Planet button
+    protected void buildDistributeMinorButton(JPanel controlBox) {
+        window.distributeminor = new JButton("Distribute Minor P");
+
+        JButton b = window.distributeminor;
+        b.setFont(new Font("Tahoma", Font.BOLD, 11));
+        b.setBackground(Color.BLACK);
+        b.setForeground(Color.BLUE);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(0, 0, 5, 0);
+        gbc.gridx = 0;
+        gbc.gridy = ++gridY;
+        controlBox.add(b, gbc);
+        b.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                window.distributeMinorBodies();
+            }
+        });
+    }
+
+    // X position text box
     protected void buildXPositionBox(JPanel controlBox) {
         final TextField xpos = window.xpos;
         final JTabbedPane tabbedPane = window.tabbedPane;
@@ -99,7 +147,7 @@ public class GUIBuilder {
         gbc_xpos.fill = GridBagConstraints.HORIZONTAL;
         gbc_xpos.insets = new Insets(0, 0, 5, 0);
         gbc_xpos.gridx = 0;
-        gbc_xpos.gridy = 1;
+        gbc_xpos.gridy = ++gridY;
         controlBox.add(xpos, gbc_xpos);
         xpos.addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent f) {
@@ -129,7 +177,7 @@ public class GUIBuilder {
         gbc_ypos.fill = GridBagConstraints.HORIZONTAL;
         gbc_ypos.insets = new Insets(0, 0, 5, 0);
         gbc_ypos.gridx = 0;
-        gbc_ypos.gridy = 2;
+        gbc_ypos.gridy = ++gridY;
         controlBox.add(ypos, gbc_ypos);
         ypos.addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent f) {
@@ -157,7 +205,7 @@ public class GUIBuilder {
         gbc_mass.fill = GridBagConstraints.HORIZONTAL;
         gbc_mass.insets = new Insets(0, 0, 5, 0);
         gbc_mass.gridx = 0;
-        gbc_mass.gridy = 3;
+        gbc_mass.gridy = ++gridY;
         controlBox.add(mass, gbc_mass);
         mass.addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent f) {
@@ -185,7 +233,7 @@ public class GUIBuilder {
         gbc_xvel.fill = GridBagConstraints.HORIZONTAL;
         gbc_xvel.insets = new Insets(0, 0, 5, 0);
         gbc_xvel.gridx = 0;
-        gbc_xvel.gridy = 4;
+        gbc_xvel.gridy = ++gridY;
         controlBox.add(xvel, gbc_xvel);
         xvel.addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent f) {
@@ -213,7 +261,7 @@ public class GUIBuilder {
         gbc_yvel.insets = new Insets(0, 0, 5, 0);
         gbc_yvel.fill = GridBagConstraints.HORIZONTAL;
         gbc_yvel.gridx = 0;
-        gbc_yvel.gridy = 5;
+        gbc_yvel.gridy = ++gridY;
         controlBox.add(yvel, gbc_yvel);
         yvel.addKeyListener(new KeyListener() {
             @Override
@@ -249,9 +297,9 @@ public class GUIBuilder {
         gbc_btnRestartSimulation.fill = GridBagConstraints.BOTH;
         gbc_btnRestartSimulation.insets = new Insets(0, 0, 5, 0);
         gbc_btnRestartSimulation.gridx = 0;
-        gbc_btnRestartSimulation.gridy = 7;
+        gbc_btnRestartSimulation.gridy = ++gridY;
         btnRestartSimulation.setFont(new Font("Tahoma", Font.BOLD, 11));
-        btnRestartSimulation.setForeground(Color.CYAN);
+        btnRestartSimulation.setForeground(Color.BLUE);
         btnRestartSimulation.setBackground(Color.BLACK);
         btnRestartSimulation.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
@@ -273,7 +321,7 @@ public class GUIBuilder {
         gbc_textField.insets = new Insets(0, 0, 5, 0);
         gbc_textField.fill = GridBagConstraints.BOTH;
         gbc_textField.gridx = 0;
-        gbc_textField.gridy = 6;
+        gbc_textField.gridy = ++gridY;
         controlBox.add(textField, gbc_textField);
     }
 
@@ -282,13 +330,13 @@ public class GUIBuilder {
     {
         JButton btnSimulate = new JButton("Simulate");
 
-        btnSimulate.setForeground(Color.CYAN);
+        btnSimulate.setForeground(Color.BLUE);
         btnSimulate.setBackground(Color.BLACK);
         GridBagConstraints gbc_btnSimulate = new GridBagConstraints();
         gbc_btnSimulate.fill = GridBagConstraints.BOTH;
         gbc_btnSimulate.insets = new Insets(0, 0, 5, 0);
         gbc_btnSimulate.gridx = 0;
-        gbc_btnSimulate.gridy = 8;
+        gbc_btnSimulate.gridy = ++gridY;
         controlBox.add(btnSimulate, gbc_btnSimulate);
         btnSimulate.addActionListener(
                 new ActionListener() {
@@ -315,7 +363,7 @@ public class GUIBuilder {
         gbc_textField_1.insets = new Insets(0, 0, 5, 0);
         gbc_textField_1.fill = GridBagConstraints.BOTH;
         gbc_textField_1.gridx = 0;
-        gbc_textField_1.gridy = 9;
+        gbc_textField_1.gridy = ++gridY;
         controlBox.add(textField_1, gbc_textField_1);
 /*
         controlBox.add(btnResetSimulation, gbc_btnResetSimulation);
@@ -328,9 +376,9 @@ public class GUIBuilder {
         GridBagConstraints gbc_btnResetSimulation = new GridBagConstraints();
         gbc_btnResetSimulation.fill = GridBagConstraints.BOTH;
         gbc_btnResetSimulation.gridx = 0;
-        gbc_btnResetSimulation.gridy = 10;
+        gbc_btnResetSimulation.gridy = ++gridY;
         btnResetSimulation.setFont(new Font("Tahoma", Font.BOLD, 11));
-        btnResetSimulation.setForeground(Color.CYAN);
+        btnResetSimulation.setForeground(Color.BLUE);
         btnResetSimulation.setBackground(Color.BLACK);
         btnResetSimulation.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {

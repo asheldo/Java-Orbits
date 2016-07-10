@@ -66,7 +66,7 @@ public class Board extends JPanel{
 				Planet p1 = sim.getDrawPlanet(i);
 				int x = (int) translateX(p1.x() * reduceX); // ;
 				int y = (int) translateY(p1.y() * reduceY); // getCoords()[1];
-				showMovePlanet(i, g, x, y, p1.getFixed());
+				showMovePlanet(i, g, x, y, p1.getFixed(), p1.getMass());
 			} else if (selected == 0) {
 				String text = textMovePlanet(sim, i);
 				board.dispfield.setText(text);
@@ -95,9 +95,16 @@ public class Board extends JPanel{
 		return displaytext;
 	}
 
-	private void showMovePlanet(int i, Graphics2D g, int x, int y, boolean fixed) {
+	private void showMovePlanet(int i, Graphics2D g, int x, int y, boolean fixed, double mass) {
 
-		int diameter = 5;
+		int diameter = 4;
+		if (mass > 10000) {
+			diameter = 8;
+		} else if (mass > 2000) {
+			diameter = 6;
+		} else if (mass > 1000) {
+			diameter = 5;
+		}
 
 		if (i < COLORS.size()) {
 			g.setColor(COLORS.get(i));
@@ -110,6 +117,8 @@ public class Board extends JPanel{
 		if (fixed) {
 			g.setColor(Color.black);
 			g.drawOval(x, y, diameter, diameter);
+			g.setColor(Color.white);
+			g.drawOval(x, y, diameter + 1, diameter + 1);
 		}
 	}
 

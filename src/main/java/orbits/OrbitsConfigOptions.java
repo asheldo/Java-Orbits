@@ -12,9 +12,11 @@ public class OrbitsConfigOptions {
      */
     private double mergeThresholdMassRatioMax;
 
-    public Level logLevel = Level.INFO; // WARNING;
-    public int logEach = 0;
-    private long sleep = 5L; // ms
+    // public Level logLevel = Level.INFO; // WARNING;
+    public Level logLevel = Level.WARNING;
+
+    public int logEach = 10000;
+    private long sleep = 1L; // 5L; // ms
     private double halfMaxDimension = 5000;
     private double outerSpace = 5000;
 

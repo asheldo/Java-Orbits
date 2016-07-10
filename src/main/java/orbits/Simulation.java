@@ -33,8 +33,10 @@ public class Simulation {
     private OrbitsConfigOptions options;
     private final OrbitsUIOptions optionsUI;
 
+    // Sorted large to small
     private Comparator<Planet> sized;
-    private EvictingQueue<Object> savedPositionsFifo;
+
+    private EvictingQueue<Positions> savedPositionsFifo;
     private boolean isRunning;
 
     public static Simulation getInstance() {
@@ -58,7 +60,7 @@ public class Simulation {
             @Override
             public int compare(Planet o1, Planet o2) {
                 Double s1 = o1.getMass();
-                return s1.compareTo(o2.getMass());
+                return -1 * s1.compareTo(o2.getMass());
             }
         };
     }
@@ -93,7 +95,7 @@ public class Simulation {
     /**
      * And add
      */
-    public void buildPlanet(double tryX, double tryY, int tryMass, double tryDX, double tryDY, boolean tryFixed) {
+    public Planet buildPlanet(double tryX, double tryY, int tryMass, double tryDX, double tryDY, boolean tryFixed) {
         double factorX = 1./getReductionFactorX();
         double factorY = 1./getReductionFactorY();
         // builder sets board too
@@ -105,6 +107,7 @@ public class Simulation {
                 tryDY * Math.pow(factorY, 0.5),
                 tryFixed);
         addPlanet(planet);
+        return planet;
     }
 
     public double getReductionFactorX() {
@@ -203,6 +206,18 @@ public class Simulation {
 
     public void logState(String s) {
         if (options.logLevel == Level.INFO) {
+            System.out.println(s + "\n\t -> " + this.toString());
+        }
+    }
+
+    public void logState(String s, Level level) {
+        if (options.logLevel.intValue() <= level.intValue()) {
+            System.out.println(s + "\n\t -> Positions #" + this.savedPositionsFifo.peek().index);
+        }
+    }
+
+    public void logStateForced(String s) {
+        if (options.logLevel != Level.SEVERE) {
             System.out.println(s + "\n\t -> " + this.toString());
         }
     }

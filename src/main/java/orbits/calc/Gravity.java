@@ -4,6 +4,8 @@ import orbits.Simulation;
 import orbits.model.Planet;
 import orbits.ui.Board;
 
+import java.util.logging.Level;
+
 /**
  * Created by amunzer on 7/6/16.
  */
@@ -38,9 +40,13 @@ public class Gravity {
                     double dpx = p1.x() - p2.x();
                     double dpy = p1.y() - p2.y();
                     double rng2 = Math.pow(dpx, 2) + Math.pow(dpy, 2);
-
-                    dx += consts.dt * consts.G * p1.getMass() / (Math.pow(rng2, 1.5)) * (dpx);
-                    dy += consts.dt * consts.G * p1.getMass() / (Math.pow(rng2, 1.5)) * (dpy);
+                    if (rng2 > 0) {
+                        dx += consts.dt * consts.G * p1.getMass() / (Math.pow(rng2, 1.5)) * (dpx);
+                        dy += consts.dt * consts.G * p1.getMass() / (Math.pow(rng2, 1.5)) * (dpy);
+                    } else {
+                        sim.logState(p2.index + " and " + p1.index + " coincident at " + sim.savePositions().index,
+                                Level.WARNING);
+                    }
                 }
             }
             boolean flip = false;

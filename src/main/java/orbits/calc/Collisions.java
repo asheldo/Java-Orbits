@@ -65,10 +65,15 @@ public class Collisions {
             if (merge(m1, m2, mergeThresholdMassRatioMax)) {
                 sim.logState("Merge " + m1 + " and " + m2 + " < " + mergeThresholdMassRatioMax);
                 lostPlanets.add(p2);
-                p1.setDx(vxc);
-                p1.setDy(vyc);
-                p1.setFixed(false);
-                p1.move(consts.dt);
+                p1.absorbed(p2);
+                if (p1.getFixed()) {
+                    // TODO Heat up instead??
+                } else {
+                    p1.setDx(vxc);
+                    p1.setDy(vyc);
+                    p1.move(consts.dt);
+                }
+                // p1.setFixed(false);
                 return p2;
             } else {
                 if (mergeThresholdMassRatioMax > 0) {

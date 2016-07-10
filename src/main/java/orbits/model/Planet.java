@@ -1,7 +1,12 @@
 package orbits.model;
 
+import java.util.Random;
+
 public class Planet {
 
+	private static int counter = 0;
+
+	public final int index = ++counter;
 	// Store X and Y coordinates of the planet in 2D space
 
 	private double xpos;
@@ -19,13 +24,13 @@ public class Planet {
 	private double dx;
 	private double dy;
 	private boolean fixed;
+	private int absorbed;
 
 	// private Board board;
 
 	// Initializes a planet with a given x and y coordinate, mass, and x and y velocity components
 
 	public Planet(double xpos, double ypos, int mass, double dx, double dy, boolean fixed) {
-
 		this.xpos = xpos;
 		this.ypos = ypos;
 		this.mass = mass;
@@ -71,19 +76,25 @@ public class Planet {
 	}
 
 	public void setX(double x) {
+		if (Double.isNaN(x)) {
+			throw new RuntimeException("move");
+		}
 		xpos = x;
 	}
 	public void setY(double y) {
+		if (Double.isNaN(y)) {
+			throw new RuntimeException("move");
+		}
 		ypos = y;
 	}
 	// Will be needed for determining the forces that this planet acts upon others with.
 
 	public double getMass() {
-		return this.mass;
+		return mass;
 	}
 
 	public void setMass(double mass) {
-		this.mass = mass;
+		this.mass = mass > 0 ? mass : .00001;
 	}
 	
 	public boolean getFixed() {
@@ -99,12 +110,16 @@ public class Planet {
 	}
 
 	public void setDx(double dx) {
-
+		if (Double.isNaN(dx)) {
+			throw new RuntimeException("move");
+		}
 		this.dx = dx;
 	}
 
 	public void setDy(double dy) {
-
+		if (Double.isNaN(dy)) {
+			throw new RuntimeException("move");
+		}
 		this.dy = dy;
 	}
 	
@@ -120,19 +135,69 @@ public class Planet {
 			dx = "Fixed";
 			dy = "Fixed";
 		} else {
-			dx = String.valueOf(this.dx);
-			dy = String.valueOf(this.dy);
+			dx = String.format("%1.2f", this.dx);
+			dy = String.format("%1.2f", this.dy);
 		}
-		return "\tX: " + this.xpos + "\tY: " + this.ypos + "\tMass: " + this.mass + "\tX velocity: " + dx + "\tY velocity: " + dy
+		return "\tX=" + String.format("%1.2f", this.xpos) +
+				"\tY=" + String.format("%1.2f", this.ypos) +
+				"\tM=" + String.format("%1.2f", this.mass) +
+				"\tDX=" + dx +
+				"\tDY=" + dy +
+				"\t++=" + absorbed
 				+ "\n";
 	}
 
 	// Adds velocity values to position
 	public void move(double dt) {
+		if (Double.isNaN(dt)) {
+			throw new RuntimeException("move");
+		}
 		if(!this.fixed){
 			this.xpos += dt * this.dx;
 			this.ypos += dt * this.dy;
 		}
 	}
 
+	private static Random random = new Random();
+
+	/**
+	 * Distribute around circle.
+	 * Also change motion to circular in same, cc direction
+	 */
+	public void randomizeOnCircle() {
+		double randAngle = 90. * random.nextDouble();
+		int randQuadrant = random.nextInt(4);
+		double sin = Math.sin(randAngle);
+		double cos = Math.cos(randAngle);
+		double d = Math.sqrt(Math.pow(xpos, 2) + Math.pow(ypos, 2));
+		double vec = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+		if (randQuadrant == 0) {
+			xpos = d * sin;
+			ypos = d * cos;
+			dx = -vec * sin;
+			dy = vec * cos;
+		}
+		else if (randQuadrant == 1) {
+			xpos = d * sin;
+			ypos = -d * cos;
+			dx = vec * sin;
+			dy = vec * cos;
+		}
+		else if (randQuadrant == 2) {
+			xpos = -d * sin;
+			ypos = -d * cos;
+			dx = vec * sin;
+			dy = -vec * cos;
+		}
+		if (randQuadrant == 3) {
+			xpos = -d * sin;
+			ypos = d * cos;
+			dx = -vec * sin;
+			dy = -vec * cos;
+		}
+	}
+
+	public void absorbed(Planet p2) {
+		++absorbed;
+	}
 }
