@@ -19,8 +19,6 @@ import java.util.logging.Level;
 
 /**
  * Created by asheldon on 7/4/16.
- *
- * TODO Where is
  */
 public class Simulation {
 
@@ -44,6 +42,9 @@ public class Simulation {
 
     private Planet fixedCenter = new Planet(0, 0, 0, 0, 0, true);
     private boolean needRandomizeOnCircle;
+    private boolean needCenterOnBody;
+    private int centerPlanet = 0;
+
 
     public static Simulation getInstance() {
         return simulation;
@@ -235,11 +236,31 @@ public class Simulation {
         fixedCenter = fix;
     }
 
+    public void needCenterOnBody(Board.BoardConstants consts, boolean centerMajor) {
+        if (centerMajor) {
+            centerPlanet = 0;
+        } else {
+            int count = getPlanetCount();
+            if (centerPlanet >= count) {
+                centerPlanet = 1;
+            } else {
+                centerPlanet += (count > 100 ? 5 : 1);
+            }
+        }
+        if (isRunning()) {
+            this.needCenterOnBody = true;
+        } else {
+            centerOnBody(consts);
+            this.needCenterOnBody = false;
+        }
+    }
+
     public void needRandomizeOnCircle(Board.BoardConstants consts) {
         if (isRunning()) {
             this.needRandomizeOnCircle = true;
         } else {
             randomizeOnCircle(consts);
+            this.needRandomizeOnCircle = false;
         }
     }
 
@@ -282,6 +303,10 @@ public class Simulation {
         @Override
         public void run() {
             while (sim.isRunning()) {
+                if (sim.needCenterOnBody) {
+                    sim.centerOnBody(consts);
+                    sim.needCenterOnBody = false;
+                }
                 if (sim.needRandomizeOnCircle) {
                     sim.randomizeOnCircle(consts);
                     sim.needRandomizeOnCircle = false;
@@ -310,6 +335,35 @@ public class Simulation {
         }
         // sim.logState("Randomized: " + sim.getDrawPlanets().toString());
 
+    }
+
+    protected void centerOnBody(Board.BoardConstants consts) {
+        int i = 0;
+        Planet center = null;
+        Iterator<Planet> planets = planetIterator();
+        while (planets.hasNext() && i++ <= centerPlanet) {
+            center = planets.next();
+            if (i == 1) {
+                setFixedCenter(center);
+            }
+        }
+        double dcx = center.x(), dcy = center.y();
+        center.setX(0);
+        center.setY(0);
+        if (centerPlanet == 0) {
+            // center.setFixed(true);
+        }
+        else {
+            planets = planetSizeIterator();
+        }
+        while (planets.hasNext()) {
+            Planet p = planets.next();
+            if (!p.equals(center)) {
+                p.setX(p.x() - dcx);
+                p.setY(p.y() - dcy);
+            }
+        }
+        // sim.logState("Centered: " + sim.getDrawPlanets().toString());
     }
 
     protected void movePlanetsOnce(Board.BoardConstants consts) {

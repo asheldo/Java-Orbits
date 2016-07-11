@@ -223,23 +223,15 @@ public class GUIMenu extends JFrame{
 		}
 	}
 
-	int centerPlanet = 0;
-
 	public void centerMinorBody() {
-		Simulation sim = Simulation.getInstance();
-		int count = sim.getPlanetCount();
-		if (centerPlanet >= count) {
-			centerOne(centerPlanet = 0);
-		} else {
-			centerOne(centerPlanet += (count > 100 ? 5 : 1));
-		}
+		centerOne(false);
 	}
 
 	public void centerMajorBody() {
-		centerOne(centerPlanet = 0);
+		centerOne(true);
 	}
 
-	protected void centerOne(int n) {
+	protected void centerOne(boolean centerMajor) {
 		Simulation sim = Simulation.getInstance();
 
 		Iterator<Planet> planets = sim.planetSizeIterator();
@@ -252,40 +244,7 @@ public class GUIMenu extends JFrame{
 			warning = new WarningBox();
 			return;
 		}
-		int i = 0;
-		Planet center = null;
-		while (planets.hasNext() && i++ <= n) {
-			center = planets.next();
-			if (i == 1) {
-				sim.setFixedCenter(center);
-			}
-		}
-
-		double dcx = center.x(), dcy = center.y();
-		if (i == 1 && !planets.hasNext()) {
-			warningtext = "\n   Only 1 planet to center.";
-			try{warning.dispose();} catch (NullPointerException npe) {}
-			warning = new WarningBox();
-		} else {
-			// sim.logState("Center: " + center.toString());
-		}
-
-		center.setX(0);
-		center.setY(0);
-		if (n == 0) {
-			// center.setFixed(true);
-		}
-		else {
-			planets = sim.planetSizeIterator();
-		}
-		while (planets.hasNext()) {
-			Planet p = planets.next();
-			if (!p.equals(center)) {
-				p.setX(p.x() - dcx);
-				p.setY(p.y() - dcy);
-			}
-		}
-		// sim.logState("Centered: " + sim.getDrawPlanets().toString());
+		sim.needCenterOnBody(getBoard().getConsts(), centerMajor);
 
 		if (sim.getHandle().tabbedPane.getSelectedIndex() == 3) {
 
