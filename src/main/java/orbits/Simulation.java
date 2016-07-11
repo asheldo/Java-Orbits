@@ -72,6 +72,9 @@ public class Simulation {
         };
     }
 
+    public long getMoves() {
+        return moves;
+    }
     public OrbitsConfigOptions getOptions() {
         return options;
     }

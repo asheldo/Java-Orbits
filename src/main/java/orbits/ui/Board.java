@@ -1,8 +1,6 @@
 package orbits.ui;
 
 import orbits.Simulation;
-import orbits.calc.Collisions;
-import orbits.calc.Gravity;
 import orbits.model.Planet;
 
 import javax.swing.*;
@@ -12,6 +10,12 @@ import java.util.Iterator;
 import java.util.logging.Level;
 
 public class Board extends JPanel{
+
+	public static final int TAB_SIMULATION_VIEW = 1;
+	public static final int TAB_INFORMATION = 0;
+
+	private long drawings;
+	private long lastMove;
 
 	public static class BoardConstants {
 		// gravitational constant
@@ -59,23 +63,18 @@ public class Board extends JPanel{
 		sim.movePlanets(consts);
 		GUIMenu board = sim.getHandle();
 
-		double reduceX = sim.getReductionFactorX();
-		double reduceY = sim.getReductionFactorY();
-		int count = sim.getPlanetCount();
-
 		int selected = board.tabbedPane.getSelectedIndex();
-		Iterator<Planet> iter = sim.planetIterator();
 		try {
-			if (selected == 1) {
-				int i = 0;
-				while (iter.hasNext()) {
-					Planet p1 = iter.next();
-					int x = (int) translateX(p1.x() * reduceX); // ;
-					int y = (int) translateY(p1.y() * reduceY); // getCoords()[1];
-					showMovePlanet(i++, g, x, y, p1.getFixed(), p1.getMass(),
-							p1.getQuadrant(sim.getFixedCenter()));
+			if (selected == TAB_SIMULATION_VIEW) {
+				long move = sim.getMoves();
+				if (move > lastMove) {
+					++drawings;
+					lastMove = move;
+					drawVisiblePlanets(sim, g);
+				} else {
+					// TODO Redraw exactly last time, or don't repaint?
 				}
-			} else if (selected == 0) {
+			} else if (selected == TAB_INFORMATION) {
 				String text = textMovePlanet(sim);
 				board.dispfield.setText(text);
 			}
@@ -83,6 +82,32 @@ public class Board extends JPanel{
 			sim.logState(e.getMessage(), Level.WARNING);
 		}
 		controlsUpdate(board, sim);
+	}
+
+	protected void drawVisiblePlanets(Simulation sim, Graphics2D g) {
+		double reduceX = sim.getReductionFactorX();
+		double reduceY = sim.getReductionFactorY();
+		// count = sim.getPlanetCount();
+
+		int i = 0, invisible = 0, visible = 0;
+		Iterator<Planet> iter = sim.planetIterator();
+		while (iter.hasNext()) {
+			Planet p1 = iter.next();
+			int x = (int) translateX(p1.x() * reduceX); // ;
+			int y = (int) translateY(p1.y() * reduceY); // getCoords()[1];
+			if (x < -10 || x > getWidth() + 10
+					|| y < -10 || y > getHeight() + 10) {
+				// don't waste drawing effort (although calculation effort is bigger problem)
+				++invisible;
+			} else {
+				++ visible;
+				drawVisiblePlanet(i++, g, x, y, p1.getFixed(), p1.getMass(),
+						p1.getQuadrant(sim.getFixedCenter()));
+			}
+		}
+		if (drawings % 50 == 0) {
+			sim.logState("Iteration=" + drawings + ", Invisible=" + invisible, Level.WARNING);
+		}
 	}
 
 	// Returns the X and Y pixels in the form of an array of length 2
@@ -107,7 +132,7 @@ public class Board extends JPanel{
 		return displaytext;
 	}
 
-	private void showMovePlanet(int i, Graphics2D g, int x, int y, boolean fixed, double mass, int quadrant) {
+	private void drawVisiblePlanet(int i, Graphics2D g, int x, int y, boolean fixed, double mass, int quadrant) {
 
 		int diameter = 4;
 		if (mass > 10000) {
@@ -160,8 +185,16 @@ public class Board extends JPanel{
 //			}
 			
 			// This repaint command is what keeps the simulation running
+			long move = sim.getMoves();
+			if (move == lastMove) {
+				try {
+					// We aren't redrawing the same Positions more than once any more, so wait for calcs:
+					Thread.sleep(100L);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
 			board.repaint();
-			
 		} else {
 
 			board.makeplanet.setEnabled(true);
