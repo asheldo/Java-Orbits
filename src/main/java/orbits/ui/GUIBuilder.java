@@ -16,7 +16,7 @@ public class GUIBuilder {
 
     private GUIMenu window;
 
-    private int gridY = 0;
+    private int gridY = -1;
 
     public GUIBuilder(GUIMenu window) {
         this.window = window;
@@ -57,10 +57,10 @@ public class GUIBuilder {
                 0.0, 0.0, 0.0, 0,0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
         ControlBox.setLayout(gbl_ControlBox);
 
-        buildNewPlanetButton(ControlBox);
         buildCenterMajorBodyButton(ControlBox);
         buildCenterMinorBodyButton(ControlBox);
         buildDistributeMinorButton(ControlBox);
+        buildNewPlanetButton(ControlBox);
         buildXPositionBox(ControlBox);
         buildYPositionBox(ControlBox);
         buildMassBox(ControlBox);
@@ -85,7 +85,7 @@ public class GUIBuilder {
         gbc_makeplanet.fill = GridBagConstraints.BOTH;
         gbc_makeplanet.insets = new Insets(0, 0, 5, 0);
         gbc_makeplanet.gridx = 0;
-        gbc_makeplanet.gridy = 0;
+        gbc_makeplanet.gridy = ++gridY;
         controlBox.add(makeplanet, gbc_makeplanet);
         makeplanet.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -323,7 +323,7 @@ public class GUIBuilder {
         btnRestartSimulation.setBackground(Color.BLACK);
         btnRestartSimulation.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
-                window.recallConfig();
+                window.recallPlanetsRestart();
                 Simulation.getInstance().getHandle().repaint();
             }
         });

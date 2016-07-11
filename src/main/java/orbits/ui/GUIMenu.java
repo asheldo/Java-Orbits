@@ -8,8 +8,6 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
-import java.util.List;
-import java.util.logging.Level;
 
 import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
@@ -22,8 +20,6 @@ public class GUIMenu extends JFrame{
 
 	private static final long serialVersionUID = 1L;
 
-	private boolean presetFirstrun = true;
-	
 	public WarningBox warning;
 	
 	public String warningtext;
@@ -36,8 +32,6 @@ public class GUIMenu extends JFrame{
 	
 	private Board board = new Board();
 
-	public int restartindex;
-
 	public boolean editorIsUp = false;
 
 	public JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
@@ -48,7 +42,7 @@ public class GUIMenu extends JFrame{
 	public JPanel panel_2 = new JPanel(true);
 	public JPanel PlanetListTab;
 	public JPanel SimulationTab;
-	public JPanel PresetOrbitChooser;
+	public JPanel presetOrbitChooser;
 	public JPanel contentPane;
 	public JButton btnResetSimulation = new JButton("Reset");
 	public JButton btnRestartSimulation = new JButton("Restart Simulation");
@@ -56,7 +50,6 @@ public class GUIMenu extends JFrame{
 	public JButton btnsimulate;
 
 	public PlanetEditor pEdit;
-	public JPanel pEditHolder = new JPanel();
 
 	public ArrayList<Planet> restartPlArrList = new ArrayList<Planet>();
 
@@ -103,9 +96,6 @@ public class GUIMenu extends JFrame{
 	}
 
 	protected void layoutEditor() {
-		pEditHolder.setForeground(Color.CYAN);
-		pEditHolder.setBackground(Color.DARK_GRAY);
-
 		tabbedPane.add("Editor", pEdit);
 		tabbedPane.addChangeListener(new ChangeListener() {
 
@@ -133,7 +123,6 @@ public class GUIMenu extends JFrame{
 		TabPaneHolder.setLayout(null);
 		tabbedPane.setBounds(0, 0, 1193, 715);
 
-
 		TabPaneHolder.add(tabbedPane);
 
 		PlanetListTab = new JPanel();
@@ -147,8 +136,12 @@ public class GUIMenu extends JFrame{
 						RowSpec.decode("597px:grow"),}));
 		dispfield.setForeground(Color.CYAN);
 		dispfield.setBackground(Color.DARK_GRAY);
-
-		PlanetListTab.add(dispfield, "1, 1, 2, 3, fill, fill");
+		JScrollPane scrollPaneInfo = new JScrollPane();
+		scrollPaneInfo.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPaneInfo.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		scrollPaneInfo.setBounds(10, 5, 750, 683);
+		scrollPaneInfo.setViewportView(dispfield);
+		PlanetListTab.add(scrollPaneInfo, "1, 1, 2, 3, fill, fill");
 
 		SimulationTab = new JPanel();
 		tabbedPane.addTab("Simulation", null, SimulationTab, null);
@@ -163,45 +156,52 @@ public class GUIMenu extends JFrame{
 		getBoard().setLayout(new BoxLayout(getBoard(), BoxLayout.X_AXIS));
 	}
 
+	protected OrbitPresets getPresets() {
+		Simulation sim = Simulation.getInstance();
+		Board.BoardConstants consts = getBoard().getConsts();
+		return new OrbitPresets(sim, dispfield, restartPlArrList, consts, tabbedPane);
+	}
+
 	protected void layoutOrbitChooser() {
-		PresetOrbitChooser = new JPanel();
-		tabbedPane.addTab("Presets", null, PresetOrbitChooser, null);
-		PresetOrbitChooser.setLayout(null);
+		presetOrbitChooser = new JPanel();
+		tabbedPane.addTab("Presets", null, presetOrbitChooser, null);
+		presetOrbitChooser.setLayout(null);
 
 		JButton CircularOrbit = new JButton("");
 		CircularOrbit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				restartindex = 1;
-				recallConfig();
+				getPresets().recallCircularOrbit();
 			}
 		});
 		CircularOrbit.setIcon(new ImageIcon(GUIMenu.class.getResource("/CircularOrbit.png")));
 		CircularOrbit.setBounds(10, 11, 51, 51);
-		PresetOrbitChooser.add(CircularOrbit);
+		presetOrbitChooser.add(CircularOrbit);
 
 		JButton LinearOrbit = new JButton("");
 		LinearOrbit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				restartindex = 2;
-				recallConfig();
+				getPresets().recallSlingshot();
 			}
 		});
 		LinearOrbit.setIcon(new ImageIcon(GUIMenu.class.getResource("/LinearOrbit.png")));
 		LinearOrbit.setBounds(10, 73, 51, 51);
-		PresetOrbitChooser.add(LinearOrbit);
+		presetOrbitChooser.add(LinearOrbit);
 
 		JButton QuadOrbit = new JButton("");
 		QuadOrbit.setBounds(10, 135, 51, 51);
 		QuadOrbit.setIcon(new ImageIcon(GUIMenu.class.getResource("/QuadOrbit.png")));
 		QuadOrbit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				restartindex = 3;
-				recallConfig();
+				getPresets().recallSquareOrbits();
 			}
 		});
-		PresetOrbitChooser.add(QuadOrbit);
+		presetOrbitChooser.add(QuadOrbit);
 
 		layoutMoreCircularOrbits(50);
+	}
+
+	public void recallPlanetsRestart() {
+		getPresets().recallPlanetsRestart();
 	}
 
 	protected void layoutMoreCircularOrbits(int dupes) {
@@ -210,9 +210,8 @@ public class GUIMenu extends JFrame{
 			final int additionalPlanets = more + 1;
 			circularOrbit.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					restartindex = 100 + additionalPlanets;
-					recallConfig();
-					}
+					getPresets().recallCircularCloudOrbits(additionalPlanets);
+				}
 			});
 			int n = 5 * (1 + more / 5);
 			circularOrbit.setIcon(new ImageIcon(GUIMenu.class.getResource("/CircularOrbit" + n + ".png")));
@@ -220,124 +219,7 @@ public class GUIMenu extends JFrame{
 					70 + 60 * (more / 5),
 					11 + 60 * (more % 5),
 					51, 51);
-			PresetOrbitChooser.add(circularOrbit);
-		}
-	}
-
-	protected void recallConfig() {
-		Simulation sim = Simulation.getInstance();
-		sim.logStateForced("recallConfig: " + restartindex);
-
-		if (restartindex == 0){
-			String d = "Planets=" + sim.getPlanetCount();
-			sim.logState(d, Level.WARNING);
-			for(int i = 0; i < restartPlArrList.size(); i++) {
-				sim.setPlanet(i, new Planet(restartPlArrList.get(i)));
-				String temp = "  Index: " + (i+1) + "\t" + Simulation.getInstance().getDrawPlanet(i).toString() + "\n";
-				d += temp;
-			}
-			changeDisplayText(d);
-			sim.setRunning(false);
-			tabbedPane.setSelectedIndex(3);
-			tabbedPane.setEnabled(true);
-		}
-		else if (restartindex == 1) {
-			sim.restart();
-
-			sim.buildPlanet(0, 0, 5000, 0, 0, true);
-			sim.buildPlanet(100, 0, 0, 0,
-					// factorX *
-					11, // 22
-					false);
-
-			if(!presetFirstrun) {
-				sim.setRunning(false);
-				tabbedPane.setSelectedIndex(3);
-			} else {
-				sim.setRunning(true);
-				tabbedPane.setSelectedIndex(1);
-				presetFirstrun = false;
-			}
-		}
-		else if (restartindex >= 100) {
-			sim.restart();
-			Planet center = sim.buildPlanet(0, 0, 200000, 0, 0, true);
-			double dim = sim.getOptions().getHalfMaxDimension();
-			int additionalPlanets = restartindex - 100;
-			double count = Math.pow((double) additionalPlanets, 0.75);
-			// Top button in column of 5 generates many more small bodies
-			if (additionalPlanets % 5 == 1) {
-				for (int more = 0; more <= additionalPlanets; ++more) {
-					Planet p1 = sim.buildPlanet(
-							// (50 + 10 * more),
-							center.getRadius() * 2.5
-									+ (0.25 * dim * Math.pow((double) (more) / (double) (additionalPlanets), .33)),
-							0 * more, // y
-							1 + 4 * additionalPlanets, // mass
-							0, // dx
-							// dy
-							center.getRadius() + (4 * Math.sqrt((double) (more) / (double) (additionalPlanets))),
-							// 4 + 0.5 more,
-							false);
-					for (int distributed = 0; distributed < count; ++distributed) {
-						Planet p2 = new Planet(p1);
-						p2.setMass(p2.getMass() * .5 * ((double) distributed/(double) count));
-						p2.randomizeOnCircle(getBoard().getConsts().dt);
-						sim.addPlanet(p2);
-					}
-				}
-				// Bottom 4 buttons in column of 5 each generates 1 more, increasing-size body
-			} else {
-				for (int more = 0; more <= additionalPlanets; ++more) {
-					sim.buildPlanet(
-							(50 + 3 * more),
-							0 * more, // y
-							5 * more, // mass
-							0, // dx
-							// dy
-							4 + 0.2 * more, false);
-				}
-			}
-			if (!presetFirstrun) {
-				sim.setRunning(false);
-				tabbedPane.setSelectedIndex(3);
-			} else {
-				sim.setRunning(true);
-				tabbedPane.setSelectedIndex(1);
-				presetFirstrun = false;
-			}
-		}
-		else if (restartindex == 2) {
-			sim.restart();
-
-			sim.buildPlanet(-20, 0, 250, 0, 0, true);
-			sim.buildPlanet(20, 0, 250, 0, 0, true);
-			sim.buildPlanet(0, 0, 0, 0, 5, false);
-
-			if(!presetFirstrun) {
-				sim.setRunning(false);
-				tabbedPane.setSelectedIndex(3);
-			} else {
-				sim.setRunning(true);
-				tabbedPane.setSelectedIndex(1);
-				presetFirstrun = false;
-			}
-		} else if (restartindex == 3) {
-			sim.restart();
-
-			sim.buildPlanet(200, 0, 1000, 0, 3, false);
-			sim.buildPlanet(-200, 0, 1000, 0, -3, false);
-			sim.buildPlanet(0, 200, 1000, -3, 0, false);
-			sim.buildPlanet(0, -200, 1000, 3, 0, false);
-
-			if(!presetFirstrun) {
-				sim.setRunning(false);
-				tabbedPane.setSelectedIndex(3);
-			} else {
-				sim.setRunning(true);
-				tabbedPane.setSelectedIndex(1);
-				presetFirstrun = false;
-			}
+			presetOrbitChooser.add(circularOrbit);
 		}
 	}
 
@@ -403,7 +285,7 @@ public class GUIMenu extends JFrame{
 				p.setY(p.y() - dcy);
 			}
 		}
-		sim.logState("Centered: " + sim.getDrawPlanets().toString());
+		// sim.logState("Centered: " + sim.getDrawPlanets().toString());
 
 		if (sim.getHandle().tabbedPane.getSelectedIndex() == 3) {
 
@@ -439,7 +321,7 @@ public class GUIMenu extends JFrame{
 			Planet p = planets.next();
 			p.randomizeOnCircle(getBoard().getConsts().dt);
 		}
-		sim.logState("Randomized: " + sim.getDrawPlanets().toString());
+		// sim.logState("Randomized: " + sim.getDrawPlanets().toString());
 
 		if (sim.getHandle().tabbedPane.getSelectedIndex() == 3) {
 
@@ -458,13 +340,8 @@ public class GUIMenu extends JFrame{
 
 		} else {
 			boolean encounteredError = false;
-			boolean empty = false;
-			List<Planet> planets = sim.getDrawPlanets();
-			if (planets.size() == 0) {
-				empty = true;
-			}
+			boolean empty = sim.getPlanetCount() == 0;
 			int errorIndex = -1;
-
 
 			double tryX = -364;  //boolean xTried = false;
 			double tryY = -323;  //boolean yTried = false;
@@ -491,7 +368,7 @@ public class GUIMenu extends JFrame{
 				tryFixed = true;
 			}
 
-			errorIndex = sim.notEmpty(planets, tryX, tryY);
+			errorIndex = sim.notEmpty(tryX, tryY);
 			if (errorIndex == -1) {
 				empty = true;
 			}

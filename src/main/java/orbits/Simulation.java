@@ -25,6 +25,7 @@ import java.util.logging.Level;
 public class Simulation {
 
     private static Simulation simulation = new Simulation();
+
     private Collisions collisions;
     private Gravity gravity;
     private Mover mover;
@@ -77,23 +78,44 @@ public class Simulation {
         return handle;
     }
 
+    public void start() {
+        handle.start();
+    }
+
+    public void restart() {
+        drawPlanets = new ArrayList<Planet>();
+    }
+
     public int getPlanetCount() {
         return drawPlanets.size();
     }
 
-    /**
-     * @return new UnmodifiableRandomAccessList
-     */
-    public List<Planet> getDrawPlanets() {
-        return Collections.unmodifiableList(drawPlanets);
-    }
-
-    protected void setDrawPlanets(List<Planet> list) {
-        drawPlanets = list;
-    }
-
+    // getDrawPlanets() { return Collections.unmodifiableList(drawPlanets); }
     public Planet getDrawPlanet(int i) {
         return drawPlanets.get(i);
+    }
+
+    /**
+     *
+     * @return same order
+     */
+    public Iterator<Planet> planetIterator() {
+        return drawPlanets.listIterator();
+    }
+
+    /**
+     * @return decreasing size order, unmodifiable
+     */
+    public Iterator<Planet> planetSizeIterator() {
+        LinkedList<Planet> sorted = new LinkedList<Planet>(drawPlanets);
+        Collections.sort(sorted, sized);
+        return Collections.unmodifiableList(sorted).listIterator();
+    }
+
+    public Positions savePositions() {
+        Positions pos = new Positions(drawPlanets);
+        savedPositionsFifo.add(pos);
+        return pos;
     }
 
     /**
@@ -126,10 +148,12 @@ public class Simulation {
         return fact;
     }
 
-    public int notEmpty(Collection<Planet> planets, double tryX, double tryY) {
+    public int notEmpty(double tryX, double tryY) {
         int i = 0;
         int errorIndex = -1;
-        for (Planet p: planets) {
+        Iterator<Planet> iter = planetIterator();
+        while (iter.hasNext()) {
+            Planet p = iter.next();
             if ((Math.sqrt(Math.pow(p.x() - tryX, 2) + Math.pow(p.y() - tryY, 2))
                     < 10)) {
                 tryX += 11;
@@ -140,20 +164,6 @@ public class Simulation {
         return errorIndex;
     }
 
-    public void validate(String xposText, String yposText) throws PlanetsCoincideError {
-        for (int i = 0; i < drawPlanets.size(); i++) {
-				/* This big ugly thing checks to see if the distance between the planet
-				 that is currently being made is less than the diameter of a planet,
-				 if it is then it throws a PlanetsCoincideError.*/
-            Planet planet = getDrawPlanet(i);
-            if (Math.sqrt(
-                    Math.pow(planet.x() - Double.parseDouble(xposText), 2)
-                    + Math.pow(planet.y() - Double.parseDouble(yposText), 2)) < 10) {
-                throw new PlanetsCoincideError(planet);
-            }
-        }
-    }
-
     public void addPlanet(Planet planet) {
         drawPlanets.add(planet);
     }
@@ -162,45 +172,12 @@ public class Simulation {
         drawPlanets.set(i, planet);
     }
 
-    public void restart() {
-        setDrawPlanets(new ArrayList<Planet>());
-    }
-
-    public void start() {
-        handle.start();
-    }
-
     public Collisions getCollisions() {
         return collisions;
     }
 
     public Gravity getGravity() {
         return gravity;
-    }
-
-    /**
-     *
-     * @return same order
-     */
-    public Iterator<Planet> planetIterator() {
-        return drawPlanets.listIterator();
-    }
-
-    /**
-     * TODO Keep one of these instead...
-     *
-     * @return increasing size order, unmodifiable --
-     */
-    public Iterator<Planet> planetSizeIterator() {
-        LinkedList<Planet> sorted = new LinkedList<Planet>(drawPlanets);
-        Collections.sort(sorted, sized);
-        return Collections.unmodifiableList(sorted).listIterator();
-    }
-
-    public Positions savePositions() {
-        Positions pos = new Positions(drawPlanets);
-        savedPositionsFifo.add(pos);
-        return pos;
     }
 
     @Override

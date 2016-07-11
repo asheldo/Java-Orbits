@@ -60,7 +60,6 @@ public class ConfirmReset extends JDialog {
 					public void actionPerformed(ActionEvent arg0) {
 						board.dispfield.setText("\n\t Welcome to orbit simulator! Enter X and Y coordinates, mass, and X and Y component velocities and click\r\n\tNew Planet to add it to the array list of Planets. Click simulate to start/stop the simulation. To make a planet\r\n\t               ignore the gravity of other planets, enter fixed into either the X-Velocity or Y-Velocity field.");
 						board.tabbedPane.setSelectedIndex(0);
-						board.restartindex = 0;
 						board.makeplanet.setEnabled(true);
 						board.xpos.setEnabled(true);
 						board.ypos.setEnabled(true);

@@ -173,12 +173,12 @@ public class Planet {
 			dx = String.format("%1.2f", this.dx);
 			dy = String.format("%1.2f", this.dy);
 		}
-		return "\tX=" + String.format("%1.2f", this.xpos) +
-				"\tY=" + String.format("%1.2f", this.ypos) +
+		return "\tX,Y=" + String.format("%1.2f", this.xpos) +
+				"," + String.format("%1.2f", this.ypos) +
+				(this.xpos == 0 && this.ypos == 0. ? "\t" : "") +
 				"\tM=" + String.format("%1.2f", this.mass) +
-				"\testR=" + String.format("%1.2f", this.radius) +
-				"\tDX=" + dx +
-				"\tDY=" + dy +
+				"\tRad=" + String.format("%1.2f", this.radius) +
+				"\tDX,DY=" + dx + "," + dy +
 				"\t++=" + absorbed
 				+ "\n";
 	}

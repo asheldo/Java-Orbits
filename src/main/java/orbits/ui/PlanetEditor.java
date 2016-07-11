@@ -36,17 +36,15 @@ public class PlanetEditor extends JPanel {
 		
 		alp = new ArrayList<Planet>();
 		Simulation sim = Simulation.getInstance();
-		for(int i1 = 0; i1 < sim.getPlanetCount(); i1++)
-			alp.add(null);
-		for(int i = 0; i < sim.getPlanetCount(); i++)
-			alp.set(i, sim.getDrawPlanet(i));
-		
-		
+		Iterator<Planet> iter = sim.planetIterator();
+		while (iter.hasNext())
+			alp.add(iter.next());
+
 		this.setForeground(new Color(0, 0, 0));
 		this.setBackground(Color.CYAN);
 		this.setBorder(new EmptyBorder(5, 5, 5, 5));
-		this.setLayout(null);		
-		
+		this.setLayout(null);
+
 		planetsTable = new JTable();
 		planetsTable.setModel(new DefaultTableModel(
 			rows(alp),
@@ -58,9 +56,13 @@ public class PlanetEditor extends JPanel {
 		planetsTable.setForeground(Color.cyan);
 		planetsTable.setBackground(Color.DARK_GRAY);
 		planetsTable.setFillsViewportHeight(true);
-		
-		planetsTable.setBounds(10, 5, 750, 683);
-		this.add(planetsTable);
+
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		scrollPane.setBounds(10, 5, 750, 683);
+		scrollPane.setViewportView(planetsTable);
+		this.add(scrollPane);
 
 		final GUIMenu board = sim.getHandle();
 		board.tabbedPane.addChangeListener(new ChangeListener() {

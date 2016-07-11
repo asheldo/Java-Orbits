@@ -64,21 +64,20 @@ public class Board extends JPanel{
 		int count = sim.getPlanetCount();
 
 		int selected = board.tabbedPane.getSelectedIndex();
-		int i = 0;
 		Iterator<Planet> iter = sim.planetIterator();
 		try {
-			while (iter.hasNext()) {
-				if (selected == 1) {
+			if (selected == 1) {
+				int i = 0;
+				while (iter.hasNext()) {
 					Planet p1 = iter.next();
 					int x = (int) translateX(p1.x() * reduceX); // ;
 					int y = (int) translateY(p1.y() * reduceY); // getCoords()[1];
-					showMovePlanet(i, g, x, y, p1.getFixed(), p1.getMass(),
+					showMovePlanet(i++, g, x, y, p1.getFixed(), p1.getMass(),
 							p1.getQuadrant(sim.getFixedCenter()));
-				} else if (selected == 0) {
-					String text = textMovePlanet(sim, i);
-					board.dispfield.setText(text);
 				}
-				i++;
+			} else if (selected == 0) {
+				String text = textMovePlanet(sim);
+				board.dispfield.setText(text);
 			}
 		} catch (Exception e) {
 			sim.logState(e.getMessage(), Level.WARNING);
@@ -97,10 +96,12 @@ public class Board extends JPanel{
 		return yTranslate;
 	}
 
-	private String textMovePlanet(Simulation sim, int i) {
+	public String textMovePlanet(Simulation sim) {
 		String displaytext = "";
-		for (int k = 0; k < sim.getPlanetCount(); k++) {
-			String temp = "  Index: " + (k + 1) + "\t" + sim.getDrawPlanet(k).toString() + "\n";
+		int k = 0;
+		Iterator<Planet> iter = sim.planetIterator();
+		while (iter.hasNext()) {
+			String temp = " #" + (++k) + iter.next().toString() + "\n";
 			displaytext += temp;
 		}
 		return displaytext;
@@ -172,12 +173,7 @@ public class Board extends JPanel{
 			board.tabbedPane.setEnabled(true);
 			board.btnResetSimulation.setEnabled(true);
 
-			String displaytext = "";
-			for(int k = 0; k < sim.getPlanetCount(); k++) {
-				String temp = "  Index: " + (k+1) + "\t" + sim.getDrawPlanet(k).toString() + "\n";
-				displaytext += temp;
-			}
-
+			String displaytext = textMovePlanet(sim);
 			board.dispfield.setText(displaytext);
 		}
 		
