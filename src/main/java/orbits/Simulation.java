@@ -43,6 +43,7 @@ public class Simulation {
     private boolean isRunning;
 
     private Planet fixedCenter = new Planet(0, 0, 0, 0, 0, true);
+    private boolean needRandomizeOnCircle;
 
     public static Simulation getInstance() {
         return simulation;
@@ -234,6 +235,14 @@ public class Simulation {
         fixedCenter = fix;
     }
 
+    public void needRandomizeOnCircle(Board.BoardConstants consts) {
+        if (isRunning()) {
+            this.needRandomizeOnCircle = true;
+        } else {
+            randomizeOnCircle(consts);
+        }
+    }
+
     /**
      *
      */
@@ -273,7 +282,12 @@ public class Simulation {
         @Override
         public void run() {
             while (sim.isRunning()) {
-                sim.movePlanetsOnce(consts);
+                if (sim.needRandomizeOnCircle) {
+                    sim.randomizeOnCircle(consts);
+                    sim.needRandomizeOnCircle = false;
+                } else {
+                    sim.movePlanetsOnce(consts);
+                }
                 if (sim.options.getSleep() > 0
                         || (sim.getPlanetCount() < 50 && sim.moves % 5 == 0))
                     try {
@@ -284,6 +298,18 @@ public class Simulation {
             }
             sim.logState("Pausing run");
         }
+    }
+
+    public void randomizeOnCircle(Board.BoardConstants consts) {
+        // sim.setFixedCenter(center);
+        Iterator<Planet> planets = planetIterator();
+        Planet center = planets.next();
+        while (planets.hasNext()) {
+            Planet p = planets.next();
+            p.randomizeOnCircle(consts.dt);
+        }
+        // sim.logState("Randomized: " + sim.getDrawPlanets().toString());
+
     }
 
     protected void movePlanetsOnce(Board.BoardConstants consts) {

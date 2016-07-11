@@ -305,24 +305,16 @@ public class GUIMenu extends JFrame{
 			warning = new WarningBox();
 			return;
 		}
-
 		Planet center = planets.next();
-		sim.setFixedCenter(center);
-		double dcx = center.x(), dcy = center.y();
 		if (!planets.hasNext()) {
 			warningtext = "\n   No minor bodies to randomize.";
 			try{warning.dispose();} catch (NullPointerException npe) {}
 			warning = new WarningBox();
+			return;
 		} else {
 			sim.logState("Randomize around: " + center.toString());
 		}
-
-		while (planets.hasNext()) {
-			Planet p = planets.next();
-			p.randomizeOnCircle(getBoard().getConsts().dt);
-		}
-		// sim.logState("Randomized: " + sim.getDrawPlanets().toString());
-
+		sim.needRandomizeOnCircle(getBoard().getConsts());
 		if (sim.getHandle().tabbedPane.getSelectedIndex() == 3) {
 
 			//TODO: mouse listener for tabbedPane at index 1 which is the board
