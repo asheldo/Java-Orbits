@@ -267,4 +267,37 @@ public class Planet {
 		}
 		return 3;
 	}
+
+	public boolean crossing(Planet p2, double xd, double yd, double dt, double d) {
+
+		double vx1 = getFixed() ? 0 : getDx();
+		double vy1 = getFixed() ? 0 : getDy();
+		double vx2 = p2.getFixed() ? 0 : p2.getDx();
+		double vy2 = p2.getFixed() ? 0 : p2.getDy();
+
+		double proportion = 1;
+		while (proportion > 0.25) {
+			proportion -= 0.25;
+			double xposH = proportion * dt * vx1;
+			double yposH = proportion * dt * vy1;
+			double x2posH = proportion * dt * vx2;
+			double y2posH = proportion * dt * vy2;
+
+			double xdH = Math.abs((p2.xpos + x2posH - (xpos + xposH))),
+					ydH = Math.abs(p2.ypos + y2posH - (ypos + yposH));
+			double dH = Math.sqrt(xdH * xdH + ydH * ydH);
+			if ((dH / d) < 0.25) {
+				System.out.println(this);
+				System.out.println(p2);
+				System.out.println(dH);
+				if (dH < p2.getRadius() * 2 + getRadius() * 2) {
+					return true;
+				}
+			} else if (dH > d) {
+				return false;
+			}
+		}
+		// todo
+		return false;
+	}
 }

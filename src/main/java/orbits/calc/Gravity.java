@@ -41,19 +41,17 @@ public class Gravity {
             Iterator<Planet> iter2 = sim.planetIterator();
             while (iter2.hasNext()) {
                 Planet p1 = iter2.next();
-                if (i == k) {
-                    dx += 0;
-                    dy += 0;
-                } else {
+                if (i != k) {
                     double dpx = p1.x() - p2.x();
                     double dpy = p1.y() - p2.y();
-                    double rng2 = Math.pow(dpx, 2) + Math.pow(dpy, 2);
-                    if (rng2 > 0) {
-                        dx += settings.dt * settings.G * p1.getMass() / (Math.pow(rng2, 1.5)) * (dpx);
-                        dy += settings.dt * settings.G * p1.getMass() / (Math.pow(rng2, 1.5)) * (dpy);
+                    double dist = Math.pow(Math.pow(dpx, 2) + Math.pow(dpy, 2),
+                            1.5); // why 1.5? d squared mult by sqrt d I guess
+                    if (dist > (p1.getRadius() + p2.getRadius())) {
+                        dx += settings.dt * settings.G * p1.getMass() / dist * (dpx);
+                        dy += settings.dt * settings.G * p1.getMass() / dist * (dpy);
                     } else {
-                        sim.logState(p2.index + " and " + p1.index + " coincident at " + sim.savePositions().index,
-                                Level.WARNING);
+                        sim.logState(p2.index + " overlaps " + p1.index,
+                                Level.INFO);
                     }
                 }
                 ++k;

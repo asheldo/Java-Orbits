@@ -24,6 +24,7 @@ public class Simulation {
 
     private static Simulation simulation = new Simulation();
 
+    private double totalMass;
     private Collisions collisions;
     private Gravity gravity;
     private Mover mover;
@@ -170,6 +171,15 @@ public class Simulation {
     }
 
     public void addPlanet(Planet planet) {
+        drawPlanets.add(planet);
+        totalMass += planet.getMass();
+    }
+
+    public double getTotalMass() {
+        return totalMass;
+    }
+
+    public void addFragment(Planet planet) {
         drawPlanets.add(planet);
     }
 
@@ -370,14 +380,16 @@ public class Simulation {
     protected void movePlanetsOnce() {
         ++moves;
         gravity.movePlanets();
+
+        // Checks for happening collisions before moving
+        collisions.check();
+
         // Moves
         // for (Planet p : drawPlanets) { p.move(consts.dt); }
         Iterator<Planet> iter = simulation.planetIterator();
         while (iter.hasNext()) {
            iter.next().move(options.dt);
         }
-        // Checks for collisions
-        collisions.check();
         // Memento
         Positions pos = savePositions();
         if (options.logEach > 0 && pos.index % options.logEach == 0) {

@@ -53,7 +53,7 @@ public class Collisions {
         }
         // Cleanup
         for (Planet p : newPlanets) {
-            sim.addPlanet(p);
+            sim.addFragment(p);
         }
         if (!lostPlanets.isEmpty()) {
             Iterator<Planet> iter3 = sim.planetIterator();
@@ -77,26 +77,38 @@ public class Collisions {
      */
     protected Planet bounceOrMerge(HashSet<Planet> lostPlanets, HashSet<Planet> newPlanets,
                                  int i, Planet p1, int j, Planet p2) {
-        OrbitsConfigOptions settings = sim.getOptions();
-        final double mergeThresholdMassRatioMax = settings.getMergeThresholdMassRatioMax();
+        if (p1.getMass() > 0 && p2.getMass() > 0
+            && i != j)
+        {
+            OrbitsConfigOptions settings = sim.getOptions();
+            final double mergeThresholdMassRatioMax = settings.getMergeThresholdMassRatioMax();
+            return bounceOrMerge(mergeThresholdMassRatioMax, lostPlanets, newPlanets, p1, p2);
+        }
+        // sim.logState("zero collision: " + p1 + "->"+ p2, Level.WARNING); // we don't do zero anymore
+        return null;
+    }
 
+    protected Planet bounceOrMerge(double mergeThresholdMassRatioMax,
+                                   HashSet<Planet> lostPlanets, HashSet<Planet> newPlanets,
+                                   Planet p1, Planet p2) {
         double xd = Math.abs(p2.x()-p1.x()), yd = Math.abs(p2.y()-p1.y());
-        double m1 = p1.getMass(), m2 = p2.getMass();
+        double d = Math.sqrt(xd * xd + yd * yd);
         double r1 = p1.getRadius(), r2 = p2.getRadius();
+        double m1 = p1.getMass(), m2 = p2.getMass();
+        double vx1 = p1.getFixed() ? 0 : p1.getDx();
+        double vy1 = p1.getFixed() ? 0 : p1.getDy();
+        double vx2 = p2.getFixed() ? 0 : p2.getDx();
+        double vy2 = p2.getFixed() ? 0 : p2.getDy();
         // If the distance is closer than the 2 planet radii (one diameter)
         double thresholdCollisionDistance = r1 + r2; // 15;
-        if (m1 < 0 || m2 < 0) {
-            // sim.logState("zero collision: " + p1 + "->"+ p2, Level.WARNING); // we don't do zero anymore
+        // Good enough, don't need hypotenuse accuracy
+        // if (collided)
+        boolean collided = xd <= thresholdCollisionDistance && yd <= thresholdCollisionDistance;
+        if (!collided &&
+                m1 + m2 > 1) {
+            collided = p1.crossing(p2, xd, yd, sim.getOptions().dt, d);
         }
-        else if (i != j
-                // Good enough, don't need hypotenuse accuracy
-                && xd <= thresholdCollisionDistance && yd <= thresholdCollisionDistance
-                // && Math.sqrt(Math.pow(xd, 2) + Math.pow(yd, 2)) <= thresholdCollisionDistance
-                ) {
-            double vx1 = p1.getFixed() ? 0 : p1.getDx();
-            double vy1 = p1.getFixed() ? 0 : p1.getDy();
-            double vx2 = p2.getFixed() ? 0 : p2.getDx();
-            double vy2 = p2.getFixed() ? 0 : p2.getDy();
+        if (collided) {
             double vxc = (vx1 * m1 + vx2 * m2)/(m1 + m2);
             double vyc = (vy1 * m1 + vy2 * m2)/(m1 + m2);
 
