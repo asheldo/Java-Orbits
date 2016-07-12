@@ -17,14 +17,6 @@ public class Board extends JPanel{
 	private long drawings;
 	private long lastMove;
 
-	public static class BoardConstants {
-		// gravitational constant
-		public final double G = 9.8; // 10
-		public final double dt = .25;
-	}
-
-	private BoardConstants consts = new BoardConstants();
-
 	private static final long serialVersionUID = 1L;
 
 	private final ArrayList<Color> COLORS = new ArrayList<Color>();
@@ -58,11 +50,11 @@ public class Board extends JPanel{
 		COLORS.add(Color.magenta);
 		COLORS.add(Color.PINK);
 
-		Simulation sim = Simulation.getInstance();
 		// Ensure the simulation has started moving
-		sim.movePlanets(consts);
-		GUIMenu board = sim.getHandle();
+		Simulation sim = Simulation.getInstance();
+		sim.movePlanets();
 
+		GUIMenu board = sim.getHandle();
 		int selected = board.tabbedPane.getSelectedIndex();
 		try {
 			if (selected == TAB_SIMULATION_VIEW) {
@@ -72,7 +64,9 @@ public class Board extends JPanel{
 					lastMove = move;
 					drawVisiblePlanets(sim, g);
 				} else {
-					// TODO Redraw exactly last time, or don't repaint?
+
+					// TODO Redraw exactly last time? For now don't repaint?
+
 				}
 			} else if (selected == TAB_INFORMATION) {
 				String text = textMovePlanet(sim);
@@ -210,10 +204,6 @@ public class Board extends JPanel{
 			board.dispfield.setText(displaytext);
 		}
 		
-	}
-
-	public BoardConstants getConsts() {
-		return consts;
 	}
 
 }

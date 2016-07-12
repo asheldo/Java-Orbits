@@ -7,10 +7,16 @@ import java.util.logging.Level;
  */
 public class OrbitsConfigOptions {
 
+    // gravitational constant
+    public final double G = 10;
+
+    // Relative time slice for calculations, no real unit for now
+    public final double dt = .05;
+
     /**
      * IF minorMass/majorMass ratio < ratio THEN collision is merge not bounce!
      */
-    private double mergeThresholdMassRatioMax;
+    private double mergeThresholdMassRatioMax = 0.2; // 0 effectively before
 
     // public Level logLevel = Level.INFO; // WARNING;
     public Level logLevel = Level.WARNING;
@@ -23,9 +29,9 @@ public class OrbitsConfigOptions {
 
     private double outerSpace = 50000;
 
+
     public OrbitsConfigOptions(Simulation simulation) {
-        // v. transfer mass
-        this.mergeThresholdMassRatioMax = 0.1; // 0. old
+
     }
 
     public double getMergeThresholdMassRatioMax() {
@@ -36,6 +42,9 @@ public class OrbitsConfigOptions {
         return halfMaxDimension;
     }
 
+    /**
+     * Between calcs
+     */
     public long getSleep() {
         return sleep;
     }

@@ -209,17 +209,17 @@ public class Simulation {
         }
     }
 
-    public void movePlanets(Board.BoardConstants consts) {
+    public void movePlanets() {
         if (!optionsUI.isMoveThreaded()) {
-            movePlanetsOnce(consts);
+            movePlanetsOnce();
         } else {
-            startMover(consts);
+            startMover();
         }
     }
 
-    protected void startMover(Board.BoardConstants consts) {
+    protected void startMover() {
         if (mover == null) {
-            mover = new Mover(this, consts);
+            mover = new Mover(this);
             mover.resume();
         }
     }
@@ -239,7 +239,7 @@ public class Simulation {
         fixedCenter = fix;
     }
 
-    public void needCenterOnBody(Board.BoardConstants consts, boolean centerMajor) {
+    public void needCenterOnBody(boolean centerMajor) {
         if (centerMajor) {
             centerPlanet = 0;
         } else {
@@ -253,16 +253,16 @@ public class Simulation {
         if (isRunning()) {
             this.needCenterOnBody = true;
         } else {
-            centerOnBody(consts);
+            centerOnBody();
             this.needCenterOnBody = false;
         }
     }
 
-    public void needRandomizeOnCircle(Board.BoardConstants consts) {
+    public void needRandomizeOnCircle() {
         if (isRunning()) {
             this.needRandomizeOnCircle = true;
         } else {
-            randomizeOnCircle(consts);
+            randomizeOnCircle();
             this.needRandomizeOnCircle = false;
         }
     }
@@ -290,11 +290,9 @@ public class Simulation {
      *
      */
     public static class Mover implements Runnable {
-        private final Board.BoardConstants consts;
         private final Simulation sim;
 
-        public Mover(Simulation sim, Board.BoardConstants consts) {
-            this.consts = consts;
+        public Mover(Simulation sim) {
             this.sim = sim;
         }
         public void pause() {
@@ -307,14 +305,14 @@ public class Simulation {
         public void run() {
             while (sim.isRunning()) {
                 if (sim.needCenterOnBody) {
-                    sim.centerOnBody(consts);
+                    sim.centerOnBody();
                     sim.needCenterOnBody = false;
                 }
                 if (sim.needRandomizeOnCircle) {
-                    sim.randomizeOnCircle(consts);
+                    sim.randomizeOnCircle();
                     sim.needRandomizeOnCircle = false;
                 } else {
-                    sim.movePlanetsOnce(consts);
+                    sim.movePlanetsOnce();
                 }
                 if (sim.options.getSleep() > 0
                         || (sim.getPlanetCount() < 50 && sim.moves % 5 == 0))
@@ -328,19 +326,19 @@ public class Simulation {
         }
     }
 
-    public void randomizeOnCircle(Board.BoardConstants consts) {
+    public void randomizeOnCircle() {
         // sim.setFixedCenter(center);
         Iterator<Planet> planets = planetIterator();
         Planet center = planets.next();
         while (planets.hasNext()) {
             Planet p = planets.next();
-            p.randomizeOnCircle(consts.dt);
+            p.randomizeOnCircle(getOptions().dt);
         }
         // sim.logState("Randomized: " + sim.getDrawPlanets().toString());
 
     }
 
-    protected void centerOnBody(Board.BoardConstants consts) {
+    protected void centerOnBody() {
         int i = 0;
         Planet center = null;
         Iterator<Planet> planets = planetIterator();
@@ -369,17 +367,17 @@ public class Simulation {
         // sim.logState("Centered: " + sim.getDrawPlanets().toString());
     }
 
-    protected void movePlanetsOnce(Board.BoardConstants consts) {
+    protected void movePlanetsOnce() {
         ++moves;
-        gravity.movePlanets(consts);
+        gravity.movePlanets();
         // Moves
         // for (Planet p : drawPlanets) { p.move(consts.dt); }
         Iterator<Planet> iter = simulation.planetIterator();
         while (iter.hasNext()) {
-           iter.next().move(consts.dt);
+           iter.next().move(options.dt);
         }
         // Checks for collisions
-        collisions.check(consts);
+        collisions.check();
         // Memento
         Positions pos = savePositions();
         if (options.logEach > 0 && pos.index % options.logEach == 0) {

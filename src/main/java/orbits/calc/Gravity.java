@@ -1,5 +1,6 @@
 package orbits.calc;
 
+import orbits.OrbitsConfigOptions;
 import orbits.Simulation;
 import orbits.model.Planet;
 import orbits.ui.Board;
@@ -17,12 +18,14 @@ public class Gravity {
         this.sim = sim;
     }
 
-    public void movePlanets(Board.BoardConstants consts) {
+    public void movePlanets() {
+        OrbitsConfigOptions settings = sim.getOptions();
         // TODO Options:
         // double emptySpaceY = sim.getOptions().getEmptySpaceY();
         // double emptySpaceX = sim.getOptions().getEmptySpaceX();
-        double halfMaxDimension = sim.getOptions().getHalfMaxDimension();
-        double outerSpace = sim.getOptions().getOuterSpace();
+        double halfMaxDimension = settings.getHalfMaxDimension();
+        double outerSpace = settings.getOuterSpace();
+
         double maxY = halfMaxDimension; // 335 + emptySpaceY;
         double minY = -halfMaxDimension; // 335 + emptySpaceY;
         double maxX = halfMaxDimension; // 335 + emptySpaceY;
@@ -46,8 +49,8 @@ public class Gravity {
                     double dpy = p1.y() - p2.y();
                     double rng2 = Math.pow(dpx, 2) + Math.pow(dpy, 2);
                     if (rng2 > 0) {
-                        dx += consts.dt * consts.G * p1.getMass() / (Math.pow(rng2, 1.5)) * (dpx);
-                        dy += consts.dt * consts.G * p1.getMass() / (Math.pow(rng2, 1.5)) * (dpy);
+                        dx += settings.dt * settings.G * p1.getMass() / (Math.pow(rng2, 1.5)) * (dpx);
+                        dy += settings.dt * settings.G * p1.getMass() / (Math.pow(rng2, 1.5)) * (dpy);
                     } else {
                         sim.logState(p2.index + " and " + p1.index + " coincident at " + sim.savePositions().index,
                                 Level.WARNING);

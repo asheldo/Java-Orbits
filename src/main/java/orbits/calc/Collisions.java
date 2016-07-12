@@ -1,5 +1,6 @@
 package orbits.calc;
 
+import orbits.OrbitsConfigOptions;
 import orbits.Simulation;
 import orbits.model.Planet;
 import orbits.ui.Board;
@@ -20,10 +21,9 @@ public class Collisions {
         this.sim = simulation;
     }
 
-    public void check(Board.BoardConstants consts) {
+    public void check() {
         final HashSet<Planet> lostPlanets = new HashSet<Planet>();
         final HashSet<Planet> newPlanets = new HashSet<Planet>();
-        final double mergeThresholdMassRatioMax = sim.getOptions().getMergeThresholdMassRatioMax();
         int i = 0;
         Iterator<Planet> iter = sim.planetIterator();
         while (iter.hasNext()) {
@@ -39,8 +39,8 @@ public class Collisions {
                     if (lostPlanets.contains(p2)) {
                         continue;
                     }
-                    Planet lost = bounceOrMerge(consts, lostPlanets, newPlanets,
-                            mergeThresholdMassRatioMax, i, p1, j, p2);
+                    Planet lost = bounceOrMerge(lostPlanets, newPlanets,
+                            i, p1, j, p2);
                     if (lost != null) {
                         lostPlanets.add(lost);
                     }
@@ -67,9 +67,7 @@ public class Collisions {
 
     /**
      *
-     * @param consts
      * @param lostPlanets
-     * @param mergeThresholdMassRatioMax
      * @param i
      * @param p1
      * @param j
@@ -77,8 +75,11 @@ public class Collisions {
      *
      * @return lost Planet if a merge-absorption occurs
      */
-    private Planet bounceOrMerge(Board.BoardConstants consts, HashSet<Planet> lostPlanets, HashSet<Planet> newPlanets,
-                                 double mergeThresholdMassRatioMax, int i, Planet p1, int j, Planet p2) {
+    protected Planet bounceOrMerge(HashSet<Planet> lostPlanets, HashSet<Planet> newPlanets,
+                                 int i, Planet p1, int j, Planet p2) {
+        OrbitsConfigOptions settings = sim.getOptions();
+        final double mergeThresholdMassRatioMax = settings.getMergeThresholdMassRatioMax();
+
         double xd = Math.abs(p2.x()-p1.x()), yd = Math.abs(p2.y()-p1.y());
         double m1 = p1.getMass(), m2 = p2.getMass();
         double r1 = p1.getRadius(), r2 = p2.getRadius();
@@ -128,22 +129,13 @@ public class Collisions {
             } else {
                 // too close in size to merge, instead transfer
                 double verySmallMass = 25.;
-                // Don't bother with mass transfer part if very small bodies
+                // Don't bother with mass transfer part if two very small bodies
                 if (mergeThresholdMassRatioMax > 0 && (m1 + m2 > verySmallMass)) {
                     double transfer = massToTransfer(m1, m2, vxc, vyc);
-                    sim.logState("Transfer: " + transfer + " between " + p1 + " to " + p2, Level.INFO);
-                    p1.setMass(m1 + transfer);
-                    p2.setMass(m2 - transfer);
-
-                    // Sometimes mass is lost create frag
-                    if (sim.getPlanetCount() < 500 && transfer > 0) {
-                        Planet p3 = new Planet(p2);
-                        p1.setMass(m1 + transfer * .75);
-                        p3.setMass(transfer * .25);
-                        p3.move(consts.dt); // extra move only valid for half of time interval
+                    Planet p3 = calvePlanet(p1, p2, transfer);
+                    if (p3 != null) {
                         newPlanets.add(p3);
                     }
-
                 } else {
                     sim.logState("Collision", // between " + p1 + " to " + p2,
                              Level.INFO);
@@ -161,6 +153,27 @@ public class Collisions {
                 // p1.move(consts.dt/2.); // extra move only valid for half of time interval
                 // p2.move(consts.dt/2.); // extra move only valid for half of time interval
             }
+        }
+        return null;
+    }
+
+    protected Planet calvePlanet(Planet p1, Planet p2, double transfer) {
+        sim.logState("Transfer: " + transfer + " between " + p1 + " to " + p2, Level.INFO);
+        double m1 = p1.getMass(), m2 = p2.getMass();
+        p1.setMass(m1 + transfer);
+        p2.setMass(m2 - transfer);
+
+        // Sometimes some mass in impactee is lost create frag
+        if (sim.getPlanetCount() < 500 && transfer > 0) {
+            Planet p3 = new Planet(p2);
+            // Remove some
+            // Todo angular
+            p1.setMass(m1 + transfer * .75);
+
+            p3.setMass(transfer * .25);
+            p3.setX(p2.x() + p2.getRadius() * 5); // move n radii
+            p3.setY(p2.y() + p2.getRadius() * 5); // move n radii
+            return p3;
         }
         return null;
     }
