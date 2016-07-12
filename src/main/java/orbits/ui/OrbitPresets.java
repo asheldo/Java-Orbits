@@ -18,15 +18,13 @@ public class OrbitPresets {
     private final Simulation sim;
     private final JTextArea dispfield;
     private final ArrayList<Planet> restartPlArrList;
-    private final Board.BoardConstants consts;
     private JTabbedPane tabbedPane;
 
     public OrbitPresets(Simulation sim, JTextArea dispfield, ArrayList<Planet> restartPlArrList,
-                        Board.BoardConstants consts, JTabbedPane tabbedPane) {
+                        JTabbedPane tabbedPane) {
         this.sim = sim;
         this.dispfield = dispfield;
         this.restartPlArrList = restartPlArrList;
-        this.consts = consts;
         this.tabbedPane = tabbedPane;
     }
 
@@ -95,6 +93,7 @@ public class OrbitPresets {
     }
 
     private void recallCloudPlus(int additionalPlanets, Planet center, double dim, double count) {
+        double dt = sim.getOptions().dt;
         for (int more = 0; more <= additionalPlanets; ++more) {
             Planet p1 = sim.buildPlanet(
                     // (50 + 10 * more),
@@ -110,7 +109,7 @@ public class OrbitPresets {
             for (int distributed = 0; distributed < count; ++distributed) {
                 Planet p2 = new Planet(p1);
                 p2.setMass(p2.getMass() * .5 * ((double) distributed/ count));
-                p2.randomizeOnCircle(consts.dt);
+                p2.randomizeOnCircle(dt);
                 sim.addPlanet(p2);
             }
         }

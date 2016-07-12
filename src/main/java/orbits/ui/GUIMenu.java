@@ -158,8 +158,7 @@ public class GUIMenu extends JFrame{
 
 	protected OrbitPresets getPresets() {
 		Simulation sim = Simulation.getInstance();
-		Board.BoardConstants consts = getBoard().getConsts();
-		return new OrbitPresets(sim, dispfield, restartPlArrList, consts, tabbedPane);
+		return new OrbitPresets(sim, dispfield, restartPlArrList, tabbedPane);
 	}
 
 	protected void layoutOrbitChooser() {
@@ -244,7 +243,7 @@ public class GUIMenu extends JFrame{
 			warning = new WarningBox();
 			return;
 		}
-		sim.needCenterOnBody(getBoard().getConsts(), centerMajor);
+		sim.needCenterOnBody(centerMajor);
 
 		if (sim.getHandle().tabbedPane.getSelectedIndex() == 3) {
 
@@ -273,7 +272,7 @@ public class GUIMenu extends JFrame{
 		} else {
 			sim.logState("Randomize around: " + center.toString());
 		}
-		sim.needRandomizeOnCircle(getBoard().getConsts());
+		sim.needRandomizeOnCircle();
 		if (sim.getHandle().tabbedPane.getSelectedIndex() == 3) {
 
 			//TODO: mouse listener for tabbedPane at index 1 which is the board
